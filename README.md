@@ -4,6 +4,13 @@ An Android application demonstrating on-device text summarization using Google's
 
 > **Educational Purpose:** This project is designed for learning and educational purposes, demonstrating how to integrate and run Google's Gemini Nano language model on Android devices for on-device text summarization.
 
+## Screenshots
+
+<p align="center">
+  <img src="screenshots/Screenshot_SamsungS25-01.png" alt="Main Menu Screen" height="500">
+  <img src="screenshots/Screenshot_SamsungS25-02.png" alt="Summarization Screen" height="500">
+</p>
+
 ## Features
 
 - **On-Device Text Summarization:** Summarize long texts entirely on-device using Gemini Nano
