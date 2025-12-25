@@ -61,6 +61,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.2")
     implementation(libs.kotlinx.coroutines.guava)
     implementation(libs.genai.summarization)
+    implementation(libs.genai.proofreading)
+    implementation(libs.genai.rewriting)
     implementation("androidx.compose.material:material-icons-extended")
 
     testImplementation(libs.junit)
