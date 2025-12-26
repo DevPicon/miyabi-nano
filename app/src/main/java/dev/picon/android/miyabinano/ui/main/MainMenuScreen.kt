@@ -15,11 +15,21 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Article
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.RateReview
+import androidx.compose.material.icons.filled.ShortText
+import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,12 +39,15 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import dev.picon.android.miyabinano.domain.model.InferenceCapability
 
 @Composable
 fun MainMenuScreen(
+    onCapabilitySelected: (InferenceCapability) -> Unit,
     onSummarizeClicked: () -> Unit,
     viewModel: ModelDownloadViewModel = hiltViewModel()
 ) {
@@ -43,15 +56,57 @@ fun MainMenuScreen(
     val navigationBarsPadding = WindowInsets.navigationBars.asPaddingValues()
 
     Box(modifier = Modifier.fillMaxSize()) {
-        // Main content - centered button
+        // Main content - capability cards
         Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 180.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Button(onClick = onSummarizeClicked) {
-                Text("Summarize")
-            }
+            Text(
+                text = "Miyabi Nano",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = "On-device AI with Gemini Nano",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            CapabilityCard(
+                capability = InferenceCapability.SUMMARIZATION,
+                icon = Icons.Default.Article,
+                onClick = { onCapabilitySelected(InferenceCapability.SUMMARIZATION) }
+            )
+
+            CapabilityCard(
+                capability = InferenceCapability.PROOFREADING,
+                icon = Icons.Default.RateReview,
+                onClick = { onCapabilitySelected(InferenceCapability.PROOFREADING) }
+            )
+
+            CapabilityCard(
+                capability = InferenceCapability.REWRITE_FORMAL,
+                icon = Icons.Default.TextFields,
+                onClick = { onCapabilitySelected(InferenceCapability.REWRITE_FORMAL) }
+            )
+
+            CapabilityCard(
+                capability = InferenceCapability.REWRITE_CASUAL,
+                icon = Icons.Default.Edit,
+                onClick = { onCapabilitySelected(InferenceCapability.REWRITE_CASUAL) }
+            )
+
+            CapabilityCard(
+                capability = InferenceCapability.REWRITE_CONCISE,
+                icon = Icons.Default.ShortText,
+                onClick = { onCapabilitySelected(InferenceCapability.REWRITE_CONCISE) }
+            )
         }
 
         // Download status section - at bottom
@@ -69,6 +124,50 @@ fun MainMenuScreen(
                     bottom = 16.dp + navigationBarsPadding.calculateBottomPadding()
                 )
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CapabilityCard(
+    capability: InferenceCapability,
+    icon: ImageVector,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.size(24.dp)
+            )
+
+            Text(
+                text = capability.displayName,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+
+            Text(
+                text = capability.description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+            )
+        }
     }
 }
 
