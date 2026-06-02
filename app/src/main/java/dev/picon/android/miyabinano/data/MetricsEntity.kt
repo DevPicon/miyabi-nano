@@ -1,6 +1,7 @@
 package dev.picon.android.miyabinano.data
 
 import androidx.room.Entity
+import androidx.room.ColumnInfo
 import androidx.room.PrimaryKey
 import dev.picon.android.miyabinano.domain.model.InferenceCapability
 import dev.picon.android.miyabinano.domain.model.InferenceMetrics
@@ -20,8 +21,8 @@ data class MetricsEntity(
     val modelLoadTimeMs: Long?,
     val inferenceTimeMs: Long,
     val totalTimeMs: Long,
-    val processHeapDeltaMB: Long,
-    val runtimeMaxHeapMB: Long
+    @ColumnInfo(name = "memoryUsedMB") val processHeapDeltaMB: Long,
+    @ColumnInfo(name = "peakMemoryMB") val runtimeMaxHeapMB: Long
 )
 
 fun InferenceMetrics.toEntity(): MetricsEntity = MetricsEntity(
