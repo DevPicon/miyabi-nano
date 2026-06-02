@@ -57,31 +57,34 @@ wrapper-demo feature checklist.
 
 ## Device Compatibility & Limitations
 
-### ⚠️ Important: Gemini Nano Availability
+### Important: Gemini Nano Availability
 
-**Gemini Nano is NOT available on all Android devices.** The model currently requires:
+Gemini Nano availability is not implied by Android version alone. ML Kit
+maintains an official [GenAI API device-support matrix](https://developers.google.com/ml-kit/genai#device_support).
+The definitive answer for a configured feature on a specific device is the
+runtime `checkFeatureStatus()` result.
 
-- Android 14 (API 34) or later
-- Specific hardware support (certain Pixel devices and flagship phones)
-- Google Play Services with AICore module
-- Sufficient storage space (~1.7 GB for model download)
+ML Kit GenAI APIs rely on Android AICore. Availability can vary by device,
+Gemini Nano base-model version, downloaded feature assets, language
+configuration, and AICore initialization state. The official API documentation
+also states that these APIs are not supported on devices with an unlocked
+bootloader.
 
-### Supported Devices
+### Repository Device Observations
 
-As of December 2024, Gemini Nano is primarily supported on:
-- Google Pixel 8 and Pixel 8 Pro
-- Google Pixel 9 series
-- Select flagship devices from major manufacturers (support varies)
+This table records repository observations, not a general support guarantee.
 
-### What Happens on Unsupported Devices?
+| Date | Device identity | Android version | Repository observation |
+| --- | --- | --- | --- |
+| 2026-06-02 | `samsung SM-F731B` | Android 16 / API 36 | Device attached for future real-device validation. Capability-specific AICore status has not yet been recorded. |
 
-The app will:
-1. Install and run on ANY Android 14+ device
-2. Check for Gemini Nano availability at runtime
-3. Display an appropriate message if the device doesn't support Gemini Nano
-4. Gracefully handle the absence of the model
+### Unsupported And Not-Yet-Ready Devices
 
-**You can install and test the app on any device, but summarization features will only work on supported devices.**
+The repository is working toward capability-specific unsupported-device UX.
+The current implementation checks summarizer status on the main screen, but it
+does not yet prove complete readiness handling for every visible capability.
+See the implementation plan for the lifecycle work required before broader
+claims are made.
 
 ## Setup Instructions
 
@@ -177,10 +180,10 @@ The app follows Clean Architecture principles:
 ### Model Download
 
 The app uses Google's GenAI Summarization API which:
-- Automatically downloads Gemini Nano when first needed
-- Stores the model locally (~1.7 GB)
+- Surfaces feature-download callbacks when configured assets are downloadable
+- Relies on Android AICore for system-managed Gemini Nano access
 - Provides download progress callbacks
-- Handles download failures gracefully
+- Exposes download failures for application-level recovery UX
 
 ## Usage
 
