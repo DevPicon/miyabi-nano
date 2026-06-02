@@ -1,6 +1,7 @@
 package dev.picon.android.miyabinano.domain.genai
 
 import dev.picon.android.miyabinano.domain.model.InferenceCapability
+import dev.picon.android.miyabinano.domain.model.InferenceRequestSnapshot
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
@@ -62,6 +63,9 @@ class CapabilityPreparationClientFactoryTest {
         override suspend fun getBaseModelName() = "synthetic"
 
         override suspend fun runInference(inputText: String) = inputText
+
+        override fun requestSnapshot(inputText: String) =
+            InferenceRequestSnapshot("SyntheticRequest", emptyList(), inputText)
 
         override fun close() {
             closed = true

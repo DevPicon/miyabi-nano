@@ -13,6 +13,7 @@ import com.google.mlkit.genai.summarization.SummarizerOptions
 import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationClient
 import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationClientFactory
 import dev.picon.android.miyabinano.domain.model.InferenceCapability
+import dev.picon.android.miyabinano.domain.model.InferenceRequestSnapshot
 import kotlinx.coroutines.guava.await
 
 class MlKitCapabilityPreparationClientFactory(
@@ -53,6 +54,17 @@ class MlKitCapabilityPreparationClientFactory(
             inference = { input ->
                 client.runInference(SummarizationRequest.builder(input).build()).await().summary
             },
+            snapshot = { input ->
+                InferenceRequestSnapshot(
+                    requestType = "SummarizationRequest",
+                    options = listOf(
+                        "Input type" to "ARTICLE",
+                        "Output type" to "ONE_BULLET",
+                        "Language" to "ENGLISH"
+                    ),
+                    inputText = input
+                )
+            },
             closeClient = client::close
         )
     }
@@ -76,6 +88,16 @@ class MlKitCapabilityPreparationClientFactory(
                     .results
                     .first()
                     .text
+            },
+            snapshot = { input ->
+                InferenceRequestSnapshot(
+                    requestType = "ProofreadingRequest",
+                    options = listOf(
+                        "Input type" to "KEYBOARD",
+                        "Language" to "ENGLISH"
+                    ),
+                    inputText = input
+                )
             },
             closeClient = client::close
         )
@@ -104,7 +126,25 @@ class MlKitCapabilityPreparationClientFactory(
                     .first()
                     .text
             },
+            snapshot = { input ->
+                InferenceRequestSnapshot(
+                    requestType = "RewritingRequest",
+                    options = listOf(
+                        "Output type" to outputType.snapshotName(),
+                        "Language" to "ENGLISH"
+                    ),
+                    inputText = input
+                )
+            },
             closeClient = client::close
         )
     }
+
+    private fun Int.snapshotName(): String =
+        when (this) {
+            RewriterOptions.OutputType.PROFESSIONAL -> "PROFESSIONAL"
+            RewriterOptions.OutputType.FRIENDLY -> "FRIENDLY"
+            RewriterOptions.OutputType.SHORTEN -> "SHORTEN"
+            else -> toString()
+        }
 }

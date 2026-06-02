@@ -8,6 +8,7 @@ import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationException
 import dev.picon.android.miyabinano.domain.genai.CapabilityProvisioningEvent
 import dev.picon.android.miyabinano.domain.genai.CapabilityReadiness
 import dev.picon.android.miyabinano.domain.model.InferenceCapability
+import dev.picon.android.miyabinano.domain.model.InferenceRequestSnapshot
 import kotlinx.coroutines.CancellationException
 
 class MlKitCapabilityPreparationClient(
@@ -17,6 +18,7 @@ class MlKitCapabilityPreparationClient(
     private val prepareEngine: suspend () -> Unit,
     private val baseModelName: suspend () -> String,
     private val inference: suspend (String) -> String,
+    private val snapshot: (String) -> InferenceRequestSnapshot,
     private val closeClient: () -> Unit
 ) : CapabilityPreparationClient {
     override suspend fun checkReadiness(): CapabilityReadiness =
@@ -64,6 +66,9 @@ class MlKitCapabilityPreparationClient(
 
     override suspend fun runInference(inputText: String): String =
         mapFailures { inference(inputText) }
+
+    override fun requestSnapshot(inputText: String): InferenceRequestSnapshot =
+        snapshot(inputText)
 
     override fun close() {
         closeClient()

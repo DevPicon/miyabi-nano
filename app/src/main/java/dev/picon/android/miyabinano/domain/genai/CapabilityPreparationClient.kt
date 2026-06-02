@@ -1,6 +1,7 @@
 package dev.picon.android.miyabinano.domain.genai
 
 import dev.picon.android.miyabinano.domain.model.InferenceCapability
+import dev.picon.android.miyabinano.domain.model.InferenceRequestSnapshot
 
 /**
  * Application-owned boundary for one configured on-device GenAI capability.
@@ -20,6 +21,8 @@ interface CapabilityPreparationClient {
     suspend fun getBaseModelName(): String
 
     suspend fun runInference(inputText: String): String
+
+    fun requestSnapshot(inputText: String): InferenceRequestSnapshot
 
     fun close()
 }
