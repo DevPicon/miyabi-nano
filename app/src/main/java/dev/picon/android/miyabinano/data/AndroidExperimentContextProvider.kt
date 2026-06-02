@@ -48,10 +48,12 @@ class AndroidExperimentContextProvider @Inject constructor(
         val capabilities = manager.getNetworkCapabilities(manager.activeNetwork)
             ?: return@annotation "OFFLINE"
         when {
+            !capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) -> "OFFLINE"
+            !capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) ->
+                "ONLINE_UNVALIDATED"
             capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "WIFI"
             capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "CELLULAR"
-            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) -> "ONLINE_OTHER"
-            else -> "OFFLINE"
+            else -> "ONLINE_OTHER"
         }
     }
 
