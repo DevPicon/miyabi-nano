@@ -44,10 +44,16 @@ class CapabilityPreparationStateMachineTest {
 
     @Test
     fun failureState_allowsRetry() {
-        val state = CapabilityPreparationStateMachine.onFailure("AICore busy")
+        val failure = CapabilityPreparationFailure(
+            category = CapabilityPreparationFailure.Category.UNKNOWN,
+            userMessage = "Capability preparation failed.",
+            recoveryGuidance = "Retry.",
+            technicalDetail = "AICore busy"
+        )
+        val state = CapabilityPreparationStateMachine.onFailure(failure)
 
         assertEquals(
-            CapabilityPreparationState.Failed("AICore busy"),
+            CapabilityPreparationState.Failed(failure),
             state
         )
         assertTrue(CapabilityPreparationAction.RETRY in state.allowedActions)

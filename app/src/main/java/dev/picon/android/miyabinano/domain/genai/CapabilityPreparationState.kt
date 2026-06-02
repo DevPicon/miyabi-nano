@@ -40,7 +40,7 @@ sealed interface CapabilityPreparationState {
     }
 
     data class Failed(
-        val message: String
+        val failure: CapabilityPreparationFailure
     ) : CapabilityPreparationState {
         override val allowedActions = setOf(CapabilityPreparationAction.RETRY)
     }
@@ -64,7 +64,12 @@ object CapabilityPreparationStateMachine {
             )
             CapabilityReadiness.AVAILABLE -> CapabilityPreparationState.Available
             CapabilityReadiness.UNKNOWN -> CapabilityPreparationState.Failed(
-                message = "Unknown capability readiness"
+                failure = CapabilityPreparationFailure(
+                    category = CapabilityPreparationFailure.Category.UNKNOWN,
+                    userMessage = "Capability readiness is unknown.",
+                    recoveryGuidance = "Wait a moment and retry.",
+                    technicalDetail = "Unknown capability readiness"
+                )
             )
         }
 
@@ -85,8 +90,9 @@ object CapabilityPreparationStateMachine {
                 }
             }
             CapabilityProvisioningEvent.Completed -> CapabilityPreparationState.Available
+            is CapabilityProvisioningEvent.Failed -> CapabilityPreparationState.Failed(event.failure)
         }
 
-    fun onFailure(message: String): CapabilityPreparationState =
-        CapabilityPreparationState.Failed(message)
+    fun onFailure(failure: CapabilityPreparationFailure): CapabilityPreparationState =
+        CapabilityPreparationState.Failed(failure)
 }

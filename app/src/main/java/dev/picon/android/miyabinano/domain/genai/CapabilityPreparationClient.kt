@@ -38,4 +38,7 @@ sealed interface CapabilityProvisioningEvent {
     data class Progress(val downloadedBytes: Long) : CapabilityProvisioningEvent
 
     data object Completed : CapabilityProvisioningEvent
+
+    data class Failed(val failure: CapabilityPreparationFailure) :
+        CapabilityProvisioningEvent
 }

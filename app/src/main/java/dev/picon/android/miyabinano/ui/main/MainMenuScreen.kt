@@ -307,9 +307,23 @@ private fun ModelDownloadSection(
                 is CapabilityPreparationState.Failed -> {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "Capability unavailable: ${state.message}",
+                            text = state.failure.userMessage,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error
+                        )
+
+                        Text(
+                            text = state.failure.recoveryGuidance,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = "Technical detail: ${state.failure.technicalDetail}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))

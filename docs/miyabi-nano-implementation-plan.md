@@ -52,6 +52,7 @@ remediation subtasks directly after their parent using suffixes such as
 | `TASK-09` | `COMPLETE` | `TASK-20` | `NOT STARTED` | `TASK-31` | `NOT STARTED` | `TASK-42` | `NOT STARTED` |
 | `TASK-10` | `COMPLETE` | `TASK-21` | `NOT STARTED` | `TASK-32` | `NOT STARTED` | `TASK-43` | `NOT STARTED` |
 | `TASK-11` | `COMPLETE` | `TASK-22` | `NOT STARTED` | `TASK-33` | `NOT STARTED` | `TASK-44` | `NOT STARTED` |
+| `TASK-45` | `IN PROGRESS` |  |  |  |  |  |  |
 
 ## Phase 0A: Restore A Verifiable Baseline
 
@@ -105,6 +106,7 @@ must remain short and lead directly to lifecycle work.
 | `TASK-15` | Lifecycle | Map typed AICore failures | Translate relevant `GenAiException` codes into user-facing recovery categories and structured experiment-log categories. Include incompatible AICore, unavailable feature, disk pressure, busy service, cancellation, foreground blocking, battery quota, input-size, and policy failures. | `TASK-13` | Known error codes remain distinguishable after crossing the domain boundary. |
 | `TASK-16` | Lifecycle | Define ML Kit resource ownership | Choose and implement an explicit lifecycle boundary for closing and recreating summarizer, proofreader, and rewriter clients. | `TASK-10`, `TASK-13` | Resource release is deterministic and documented; closed clients are not accidentally reused. |
 | `TASK-17` | Lifecycle | Test capability lifecycle | Add deterministic tests for readiness transitions, download callbacks, retry decisions, gating, failure mapping, and resource-ownership behavior. | `TASK-11`, `TASK-14`, `TASK-15`, `TASK-16` | Automated tests cover the capability lifecycle state machine and typed failures. |
+| `TASK-45` | Lifecycle | Handle observed AICore IPC disconnect during provisioning | Map an observed `1-DOWNLOAD_ERROR / 6-IPC_ERROR` service disconnect to a recoverable preparation failure. Show wait-and-retry guidance without labeling the device unsupported, retain the raw SDK detail for evidence, and keep the broader public error-code catalog in `TASK-15`. | `TASK-12` | Provisioning IPC disconnects produce a stable retry UX with a user-facing explanation and separate technical detail. |
 
 **Phase acceptance:** Each visible capability reports its own readiness,
 unsupported configurations have a stable UX, downloadable and downloading states

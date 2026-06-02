@@ -4,9 +4,11 @@ import com.google.mlkit.genai.common.DownloadCallback
 import com.google.mlkit.genai.common.FeatureStatus
 import com.google.mlkit.genai.common.GenAiException
 import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationClient
+import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationException
 import dev.picon.android.miyabinano.domain.genai.CapabilityProvisioningEvent
 import dev.picon.android.miyabinano.domain.genai.CapabilityReadiness
 import dev.picon.android.miyabinano.domain.model.InferenceCapability
+import kotlinx.coroutines.CancellationException
 
 class MlKitCapabilityPreparationClient(
     override val capability: InferenceCapability,
@@ -27,8 +29,9 @@ class MlKitCapabilityPreparationClient(
         }
 
     override suspend fun provision(onEvent: (CapabilityProvisioningEvent) -> Unit) {
-        downloadFeature(
-            object : DownloadCallback {
+        try {
+            downloadFeature(
+                object : DownloadCallback {
                 override fun onDownloadStarted(bytesToDownload: Long) {
                     onEvent(CapabilityProvisioningEvent.Started(bytesToDownload))
                 }
@@ -41,9 +44,15 @@ class MlKitCapabilityPreparationClient(
                     onEvent(CapabilityProvisioningEvent.Completed)
                 }
 
-                override fun onDownloadFailed(e: GenAiException) = Unit
-            }
-        )
+                    override fun onDownloadFailed(e: GenAiException) {
+                        onEvent(CapabilityProvisioningEvent.Failed(MlKitCapabilityFailureMapper.map(e)))
+                    }
+                }
+            )
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            throw CapabilityPreparationException(MlKitCapabilityFailureMapper.map(e), e)
+        }
     }
 
     override suspend fun prepareInferenceEngine() {

@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationClient
 import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationState
 import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationStateMachine
+import dev.picon.android.miyabinano.domain.genai.toCapabilityPreparationFailure
 import dev.picon.android.miyabinano.domain.model.InferenceCapability
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -70,7 +71,7 @@ class ModelDownloadViewModel @Inject constructor(
                 updateState(
                     capability,
                     CapabilityPreparationStateMachine.onFailure(
-                        e.message ?: "Failed to provision capability"
+                        e.toCapabilityPreparationFailure()
                     )
                 )
             }
@@ -97,7 +98,7 @@ class ModelDownloadViewModel @Inject constructor(
             updateState(
                 capability,
                 CapabilityPreparationStateMachine.onFailure(
-                    e.message ?: "Failed to check capability status"
+                    e.toCapabilityPreparationFailure()
                 )
             )
         }
