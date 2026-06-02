@@ -8,6 +8,7 @@ import dev.picon.android.miyabinano.data.MetricsRepository
 import dev.picon.android.miyabinano.domain.InferenceUseCase
 import dev.picon.android.miyabinano.domain.model.InferenceCapability
 import dev.picon.android.miyabinano.domain.model.InferenceResult
+import dev.picon.android.miyabinano.domain.model.TestCase
 import dev.picon.android.miyabinano.domain.repository.TestDataRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
