@@ -2,107 +2,100 @@ package dev.picon.android.miyabinano.ui.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.mlkit.genai.common.DownloadCallback
-import com.google.mlkit.genai.common.FeatureStatus
-import com.google.mlkit.genai.common.GenAiException
-import com.google.mlkit.genai.summarization.Summarizer
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationClient
+import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationState
+import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationStateMachine
+import dev.picon.android.miyabinano.domain.model.InferenceCapability
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.guava.await
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/**
- * ViewModel for managing Gemini Nano model download on the main menu screen.
- * This is separate from SummarizeViewModel to avoid introducing bugs into existing functionality.
- */
 @HiltViewModel
 class ModelDownloadViewModel @Inject constructor(
-    private val summarizer: Summarizer
+    clients: List<@JvmSuppressWildcards CapabilityPreparationClient>
 ) : ViewModel() {
+    private val clientsByCapability = clients.associateBy(CapabilityPreparationClient::capability)
 
-    private val _state = MutableStateFlow<ModelDownloadState>(ModelDownloadState.Checking)
-    val state: StateFlow<ModelDownloadState> = _state.asStateFlow()
+    private val _states = MutableStateFlow<Map<InferenceCapability, CapabilityPreparationState>>(
+        InferenceCapability.entries.associateWith {
+            CapabilityPreparationState.Checking
+        }
+    )
+    val states: StateFlow<Map<InferenceCapability, CapabilityPreparationState>> =
+        _states.asStateFlow()
 
     init {
-        checkModelStatus()
+        refreshAll()
     }
 
-    /**
-     * Checks the current status of the Gemini Nano model
-     */
-    fun checkModelStatus() {
+    fun refreshAll() {
+        clientsByCapability.keys.forEach(::checkStatus)
+    }
+
+    fun checkStatus(capability: InferenceCapability) {
+        val client = clientsByCapability[capability] ?: return
+
         viewModelScope.launch {
+            updateState(capability, CapabilityPreparationState.Checking)
             try {
-                _state.value = ModelDownloadState.Checking
-
-                val featureStatus = summarizer.checkFeatureStatus().await()
-
-                _state.value = when (featureStatus) {
-                    FeatureStatus.UNAVAILABLE -> ModelDownloadState.Unavailable
-                    FeatureStatus.DOWNLOADABLE -> ModelDownloadState.Downloadable
-                    FeatureStatus.DOWNLOADING -> ModelDownloadState.Downloading(0, 0)
-                    FeatureStatus.AVAILABLE -> ModelDownloadState.Downloaded
-                    else -> ModelDownloadState.Failed("Unknown status: $featureStatus")
-                }
+                updateState(
+                    capability,
+                    CapabilityPreparationStateMachine.fromReadiness(
+                        client.checkReadiness()
+                    )
+                )
             } catch (e: Exception) {
-                _state.value = ModelDownloadState.Failed(
-                    e.message ?: "Failed to check model status"
+                updateState(
+                    capability,
+                    CapabilityPreparationStateMachine.onFailure(
+                        e.message ?: "Failed to check capability status"
+                    )
                 )
             }
         }
     }
 
-    /**
-     * Triggers the download of the Gemini Nano model
-     */
-    fun startDownload() {
+    fun startProvisioning(capability: InferenceCapability) {
+        val client = clientsByCapability[capability] ?: return
+
         viewModelScope.launch {
             try {
-                val callback = object : DownloadCallback {
-                    override fun onDownloadStarted(bytesToDownload: Long) {
-                        _state.value = ModelDownloadState.Downloading(
-                            totalBytes = bytesToDownload,
-                            downloadedBytes = 0
-                        )
-                    }
-
-                    override fun onDownloadProgress(totalBytesDownloaded: Long) {
-                        val currentState = _state.value
-                        if (currentState is ModelDownloadState.Downloading) {
-                            _state.value = ModelDownloadState.Downloading(
-                                totalBytes = currentState.totalBytes,
-                                downloadedBytes = totalBytesDownloaded
+                client.provision { event ->
+                    _states.update { currentStates ->
+                        val currentState =
+                            currentStates[capability] ?: CapabilityPreparationState.Checking
+                        currentStates + (
+                            capability to CapabilityPreparationStateMachine.onProvisioningEvent(
+                                currentState = currentState,
+                                event = event
                             )
-                        }
-                    }
-
-                    override fun onDownloadCompleted() {
-                        _state.value = ModelDownloadState.Downloaded
-                    }
-
-                    override fun onDownloadFailed(e: GenAiException) {
-                        _state.value = ModelDownloadState.Failed(
-                            e.message ?: "Download failed"
                         )
                     }
                 }
-
-                summarizer.downloadFeature(callback)
+                checkStatus(capability)
             } catch (e: Exception) {
-                _state.value = ModelDownloadState.Failed(
-                    e.message ?: "Failed to start download"
+                updateState(
+                    capability,
+                    CapabilityPreparationStateMachine.onFailure(
+                        e.message ?: "Failed to provision capability"
+                    )
                 )
             }
         }
     }
 
-    /**
-     * Retries the download after a failure
-     */
-    fun retryDownload() {
-        checkModelStatus()
+    fun retry(capability: InferenceCapability) {
+        checkStatus(capability)
+    }
+
+    private fun updateState(
+        capability: InferenceCapability,
+        state: CapabilityPreparationState
+    ) {
+        _states.update { it + (capability to state) }
     }
 }

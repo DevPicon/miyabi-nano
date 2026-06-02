@@ -23,8 +23,7 @@ fun AppNavigation(summarizeViewModel: SummarizeViewModel) {
             MainMenuScreen(
                 onCapabilitySelected = { capability ->
                     navController.navigate("inference/${capability.name}")
-                },
-                onSummarizeClicked = { navController.navigate("summarize") }
+                }
             )
         }
         composable("summarize") {

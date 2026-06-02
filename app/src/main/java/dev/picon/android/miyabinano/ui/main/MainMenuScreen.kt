@@ -43,27 +43,30 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationState
 import dev.picon.android.miyabinano.domain.model.InferenceCapability
 
 @Composable
 fun MainMenuScreen(
     onCapabilitySelected: (InferenceCapability) -> Unit,
-    onSummarizeClicked: () -> Unit,
     viewModel: ModelDownloadViewModel = hiltViewModel()
 ) {
-    val downloadState by viewModel.state.collectAsState()
+    val capabilityStates by viewModel.states.collectAsState()
 
     val navigationBarsPadding = WindowInsets.navigationBars.asPaddingValues()
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        // Main content - capability cards
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 180.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(
+                top = 16.dp,
+                start = 16.dp,
+                end = 16.dp,
+                bottom = 16.dp + navigationBarsPadding.calculateBottomPadding()
+            )
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
             Text(
                 text = "Miyabi Nano",
                 style = MaterialTheme.typography.headlineMedium,
@@ -107,22 +110,14 @@ fun MainMenuScreen(
                 icon = Icons.Default.ShortText,
                 onClick = { onCapabilitySelected(InferenceCapability.REWRITE_CONCISE) }
             )
-        }
+        Spacer(modifier = Modifier.height(8.dp))
 
-        // Download status section - at bottom
         ModelDownloadSection(
-            state = downloadState,
-            onDownloadClick = { viewModel.startDownload() },
-            onRetryClick = { viewModel.retryDownload() },
+            states = capabilityStates,
+            onDownloadClick = viewModel::startProvisioning,
+            onRetryClick = viewModel::retry,
             modifier = Modifier
-                .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .padding(
-                    start = 16.dp,
-                    end = 16.dp,
-                    top = 16.dp,
-                    bottom = 16.dp + navigationBarsPadding.calculateBottomPadding()
-                )
         )
     }
 }
@@ -173,9 +168,9 @@ private fun CapabilityCard(
 
 @Composable
 private fun ModelDownloadSection(
-    state: ModelDownloadState,
-    onDownloadClick: () -> Unit,
-    onRetryClick: () -> Unit,
+    states: Map<InferenceCapability, CapabilityPreparationState>,
+    onDownloadClick: (InferenceCapability) -> Unit,
+    onRetryClick: (InferenceCapability) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -199,8 +194,17 @@ private fun ModelDownloadSection(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            when (state) {
-                is ModelDownloadState.Checking -> {
+            InferenceCapability.entries.forEach { capability ->
+                val state = states[capability] ?: CapabilityPreparationState.Checking
+
+                Text(
+                    text = capability.displayName,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium
+                )
+
+                when (state) {
+                is CapabilityPreparationState.Checking -> {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -217,7 +221,7 @@ private fun ModelDownloadSection(
                     }
                 }
 
-                is ModelDownloadState.Unavailable -> {
+                is CapabilityPreparationState.Unavailable -> {
                     Text(
                         text = "Model not supported on this device",
                         style = MaterialTheme.typography.bodySmall,
@@ -225,7 +229,7 @@ private fun ModelDownloadSection(
                     )
                 }
 
-                is ModelDownloadState.Downloadable -> {
+                is CapabilityPreparationState.Downloadable -> {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -236,13 +240,13 @@ private fun ModelDownloadSection(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Button(onClick = onDownloadClick) {
+                        Button(onClick = { onDownloadClick(capability) }) {
                             Text("Download")
                         }
                     }
                 }
 
-                is ModelDownloadState.Downloading -> {
+                is CapabilityPreparationState.Downloading -> {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -255,7 +259,7 @@ private fun ModelDownloadSection(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
-                                text = "${state.progressPercentage}%",
+                                text = "${(state.progress * 100).toInt()}%",
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Medium
                             )
@@ -278,7 +282,7 @@ private fun ModelDownloadSection(
                     }
                 }
 
-                is ModelDownloadState.Downloaded -> {
+                is CapabilityPreparationState.Available -> {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -292,7 +296,7 @@ private fun ModelDownloadSection(
                                 )
                         )
                         Text(
-                            text = "Model ready - 100% offline AI enabled",
+                            text = "Capability ready",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Medium
@@ -300,21 +304,23 @@ private fun ModelDownloadSection(
                     }
                 }
 
-                is ModelDownloadState.Failed -> {
+                is CapabilityPreparationState.Failed -> {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = "Download failed: ${state.errorMessage}",
+                            text = "Capability unavailable: ${state.message}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        TextButton(onClick = onRetryClick) {
+                        TextButton(onClick = { onRetryClick(capability) }) {
                             Text("Retry")
                         }
                     }
                 }
+            }
+                Spacer(modifier = Modifier.height(8.dp))
             }
         }
     }
