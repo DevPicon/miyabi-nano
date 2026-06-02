@@ -5,7 +5,6 @@ the behavior has been implemented, verified, or reviewed.
 
 | Gap | Why It Matters | Owning Task |
 | --- | --- | --- |
-| The home screen exposes a per-capability download matrix rather than a concise bootstrap summary. | The UI overemphasizes manual downloads and obscures the distinction between shared Gemini Nano identity and capability-specific assets. | `TASK-46`, `TASK-47` |
 | Current peak-memory reporting exposes the runtime maximum heap limit. | The UI can misrepresent a heap limit as observed model or system-memory behavior. | `TASK-21` |
 | Experiment records lack reproducibility context and structured export. | Results cannot be compared credibly across devices, configurations, or runs. | `TASK-18`, `TASK-19`, `TASK-22` |
 | Offline-after-provisioning behavior is claimed but not proven through a real-device protocol. | Offline-first credibility requires dated evidence, not inference from API documentation. | `TASK-25`, `TASK-30` |
