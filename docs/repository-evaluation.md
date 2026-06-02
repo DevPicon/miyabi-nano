@@ -7,18 +7,16 @@ proofreading, and rewriting clients backed by Gemini Nano, checks summarizer
 availability on launch, exposes model-download progress, persists inference
 records with Room, and includes reusable test inputs.
 
-It is not yet conference-ready. The current visible experience overstates what
-has been proven. The app displays five capability entry points, but the main
-download/status surface checks only the summarizer. The generic inference path
-calls clients directly without capability-specific preparation. The README makes
-strong offline and privacy claims without a reproducible validation protocol.
-The metrics card presents rough timings and process-heap deltas as performance
-evidence without benchmark controls.
+It is not yet conference-ready. The implementation now separates bootstrap
+status from experiment-specific readiness, gates inference by capability, and
+records versioned reproducibility context and timing milestones. The remaining
+gap is evidence: supported-device, unsupported-device, offline, interruption,
+battery, and thermal behavior still require reproducible physical-device
+validation. The README also makes strong offline and privacy claims without a
+completed validation protocol.
 
-Baseline verification also fails at `:app:compileDebugKotlin`. The generic
-inference path uses incompatible await/result handling for the ML Kit client
-return types, and `InferenceViewModel` is missing the `TestCase` model import.
-Restoring a compiling baseline is the first implementation prerequisite.
+The original baseline failed at `:app:compileDebugKotlin`. That prerequisite has
+been restored, but physical-device validation remains deferred.
 
 ## What Is Technically Serious
 
@@ -38,17 +36,18 @@ Restoring a compiling baseline is the first implementation prerequisite.
 
 - The baseline now compiles, but runtime validation remains incomplete across
   supported and unsupported physical devices.
-- The main screen exposes per-capability download controls rather than a
-  concise bootstrap summary and experiment-level gating.
-- The active generic inference path does not call `checkFeatureStatus()` before
-  inference and does not explain adapter downloads, transient provisioning, or
-  unsupported configurations.
-- The active inference path is unified behind the app-owned capability
-  boundary, but readiness gating and deterministic resource ownership remain
-  future work.
-- `InferenceUseCase` measures elapsed wall-clock time around one request and
-  labels it inference latency. It does not distinguish cold preparation, warm
-  inference, queueing, download wait, or UI-perceived time.
+- The main screen now exposes a concise bootstrap summary and moves
+  capability-specific setup into each experiment. Physical-device UX evidence
+  is still missing.
+- The active generic inference path checks readiness before inference and maps
+  typed failure outcomes. The full device-specific failure matrix is still
+  unverified.
+- The active inference path is unified behind an app-owned capability boundary
+  with explicit closeable-client ownership. Lifecycle interruption still needs
+  physical-device validation.
+- `InferenceUseCase` now records preparation, inference, completion,
+  persistence, and user-perceived timing milestones. Benchmark distributions
+  and controlled cold/warm protocols remain future work.
 - Process memory observations are now labeled as process-heap delta and runtime
   maximum heap rather than observed peak model or system memory.
 - Token counts are heuristic estimates. They are not model tokenizer results.
@@ -65,10 +64,10 @@ Restoring a compiling baseline is the first implementation prerequisite.
 | --- | --- | --- |
 | Android with OS-supported AI | Partial | The integration uses ML Kit GenAI APIs, but the docs do not clearly explain the AICore boundary or what Android owns versus what the app owns. |
 | Practical Gemini Nano / AICore experimentation | Partial | Real clients exist, but experiments are not versioned, exported, or reproducible. |
-| Device support reality | Weak | Only summarizer status is shown. No capability matrix, device fingerprint, AICore compatibility explanation, or unsupported-device evidence exists. |
-| Latency and UX implications | Weak | A single elapsed time is recorded. There is no cold/warm methodology, streaming comparison, distribution reporting, or user-perceived timing. |
+| Device support reality | Partial | Bootstrap and capability-specific readiness are modeled, but unsupported-device and physical-device evidence remain missing. |
+| Latency and UX implications | Partial | Timing milestones are recorded, but cold/warm methodology, distributions, and physical-device observations remain missing. |
 | Battery and thermal implications | Missing | No battery, thermal, sustained-run, or quota experiment exists. |
 | Offline behavior after provisioning | Claimed, not demonstrated | No explicit offline validation workflow or evidence artifact exists. |
-| Platform constraints and failure modes | Weak | Exceptions are reduced to generic messages. |
-| Offline-first UX | Weak | The UI exposes a download button, but does not model interrupted downloads, retry semantics, or per-capability readiness. |
+| Platform constraints and failure modes | Partial | Typed outcomes and retry guidance exist, but the device-specific failure matrix is not validated. |
+| Offline-first UX | Partial | Bootstrap and experiment setup states exist, but interruption and offline evidence remain deferred. |
 | Privacy-preserving AI | Weak | Inference is on-device, but raw experiment text is persisted and backup remains enabled without exclusions. |
