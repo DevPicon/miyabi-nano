@@ -20,6 +20,6 @@ data class InferenceMetrics(
     val inferenceTimeMs: Long,
     val totalTimeMs: Long,
 
-    val memoryUsedMB: Long,
-    val peakMemoryMB: Long
+    val processHeapDeltaMB: Long,
+    val runtimeMaxHeapMB: Long
 )

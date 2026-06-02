@@ -49,8 +49,8 @@ Restoring a compiling baseline is the first implementation prerequisite.
 - `InferenceUseCase` measures elapsed wall-clock time around one request and
   labels it inference latency. It does not distinguish cold preparation, warm
   inference, queueing, download wait, or UI-perceived time.
-- `MemoryTracker.getPeakMemoryMB()` returns the runtime maximum heap limit, not
-  observed peak memory.
+- Process memory observations are now labeled as process-heap delta and runtime
+  maximum heap rather than observed peak model or system memory.
 - Token counts are heuristic estimates. They are not model tokenizer results.
 - Raw input and generated output are persisted to Room. This weakens the privacy
   story unless storage becomes opt-in, controllable, and excluded from backup.

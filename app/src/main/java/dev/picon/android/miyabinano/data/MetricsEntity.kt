@@ -20,8 +20,8 @@ data class MetricsEntity(
     val modelLoadTimeMs: Long?,
     val inferenceTimeMs: Long,
     val totalTimeMs: Long,
-    val memoryUsedMB: Long,
-    val peakMemoryMB: Long
+    val processHeapDeltaMB: Long,
+    val runtimeMaxHeapMB: Long
 )
 
 fun InferenceMetrics.toEntity(): MetricsEntity = MetricsEntity(
@@ -38,8 +38,8 @@ fun InferenceMetrics.toEntity(): MetricsEntity = MetricsEntity(
     modelLoadTimeMs = modelLoadTimeMs,
     inferenceTimeMs = inferenceTimeMs,
     totalTimeMs = totalTimeMs,
-    memoryUsedMB = memoryUsedMB,
-    peakMemoryMB = peakMemoryMB
+    processHeapDeltaMB = processHeapDeltaMB,
+    runtimeMaxHeapMB = runtimeMaxHeapMB
 )
 
 fun MetricsEntity.toDomain(): InferenceMetrics = InferenceMetrics(
@@ -56,6 +56,6 @@ fun MetricsEntity.toDomain(): InferenceMetrics = InferenceMetrics(
     modelLoadTimeMs = modelLoadTimeMs,
     inferenceTimeMs = inferenceTimeMs,
     totalTimeMs = totalTimeMs,
-    memoryUsedMB = memoryUsedMB,
-    peakMemoryMB = peakMemoryMB
+    processHeapDeltaMB = processHeapDeltaMB,
+    runtimeMaxHeapMB = runtimeMaxHeapMB
 )

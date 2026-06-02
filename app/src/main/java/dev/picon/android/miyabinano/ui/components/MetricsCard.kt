@@ -56,8 +56,8 @@ fun MetricsCard(
             )
 
             MetricRow(
-                label = "Memory",
-                value = "${formatNumber(metrics.memoryUsedMB)} MB"
+                label = "Process heap delta",
+                value = "${formatNumber(metrics.processHeapDeltaMB)} MB"
             )
 
             if (metrics.modelLoadTimeMs != null) {

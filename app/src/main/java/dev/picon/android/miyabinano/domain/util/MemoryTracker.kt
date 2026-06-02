@@ -22,7 +22,7 @@ class MemoryTracker @Inject constructor(
         return usedMemory / (1024 * 1024)
     }
 
-    fun getPeakMemoryMB(): Long {
+    fun getRuntimeMaxHeapMB(): Long {
         return runtime.maxMemory() / (1024 * 1024)
     }
 

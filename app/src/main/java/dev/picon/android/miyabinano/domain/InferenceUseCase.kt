@@ -51,7 +51,7 @@ class InferenceUseCase @Inject constructor(
 
                     val totalEndTime = System.currentTimeMillis()
                     val endMemory = memoryTracker.getCurrentMemoryUsageMB()
-                    val peakMemory = memoryTracker.getPeakMemoryMB()
+                    val runtimeMaxHeap = memoryTracker.getRuntimeMaxHeapMB()
 
                     val outputTokenCount = TokenCounter.estimateTokens(outputText)
                     val outputCharCount = outputText.length
@@ -70,8 +70,8 @@ class InferenceUseCase @Inject constructor(
                         modelLoadTimeMs = null,
                         inferenceTimeMs = inferenceTimeMs,
                         totalTimeMs = totalTimeMs,
-                        memoryUsedMB = endMemory - startMemory,
-                        peakMemoryMB = peakMemory
+                        processHeapDeltaMB = endMemory - startMemory,
+                        runtimeMaxHeapMB = runtimeMaxHeap
                     )
 
                     emit(InferenceResult.Success(outputText, metrics))
