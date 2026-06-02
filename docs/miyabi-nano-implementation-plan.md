@@ -54,7 +54,7 @@ remediation subtasks directly after their parent using suffixes such as
 | `TASK-10` | `COMPLETE` | `TASK-21` | `COMPLETE` | `TASK-32` | `NOT STARTED` | `TASK-43` | `NOT STARTED` |
 | `TASK-11` | `COMPLETE` | `TASK-22` | `NOT STARTED` | `TASK-33` | `NOT STARTED` | `TASK-44` | `NOT STARTED` |
 | `TASK-45` | `COMPLETE` | `TASK-46` | `COMPLETE` | `TASK-47` | `COMPLETE` | `TASK-48` | `NOT STARTED` |
-| `TASK-49` | `NOT STARTED` | `TASK-50` | `NOT STARTED` |  |  |  |  |
+| `TASK-49` | `IN PROGRESS` | `TASK-50` | `NOT STARTED` |  |  |  |  |
 
 ## Phase 0A: Restore A Verifiable Baseline
 
