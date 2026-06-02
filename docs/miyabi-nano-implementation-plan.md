@@ -8,6 +8,7 @@
 - [Evidence priorities](evidence-priorities.md)
 - [Verification strategy](verification-strategy.md)
 - [Technical content strategy](content-strategy.md)
+- [Known debt register](known-debt-register.md)
 - [Agent governance](../AGENT.md)
 
 ## Task Numbering And Execution Order
@@ -46,7 +47,7 @@ remediation subtasks directly after their parent using suffixes such as
 | `TASK-05` | `COMPLETE` | `TASK-16` | `NOT STARTED` | `TASK-27` | `NOT STARTED` | `TASK-38` | `NOT STARTED` |
 | `TASK-06` | `COMPLETE` | `TASK-17` | `NOT STARTED` | `TASK-28` | `NOT STARTED` | `TASK-39` | `NOT STARTED` |
 | `TASK-07` | `COMPLETE` | `TASK-18` | `NOT STARTED` | `TASK-29` | `NOT STARTED` | `TASK-40` | `NOT STARTED` |
-| `TASK-08` | `NOT STARTED` | `TASK-19` | `NOT STARTED` | `TASK-30` | `NOT STARTED` | `TASK-41` | `NOT STARTED` |
+| `TASK-08` | `IN PROGRESS` | `TASK-19` | `NOT STARTED` | `TASK-30` | `NOT STARTED` | `TASK-41` | `NOT STARTED` |
 | `TASK-09` | `NOT STARTED` | `TASK-20` | `NOT STARTED` | `TASK-31` | `NOT STARTED` | `TASK-42` | `NOT STARTED` |
 | `TASK-10` | `NOT STARTED` | `TASK-21` | `NOT STARTED` | `TASK-32` | `NOT STARTED` | `TASK-43` | `NOT STARTED` |
 | `TASK-11` | `NOT STARTED` | `TASK-22` | `NOT STARTED` | `TASK-33` | `NOT STARTED` | `TASK-44` | `NOT STARTED` |
