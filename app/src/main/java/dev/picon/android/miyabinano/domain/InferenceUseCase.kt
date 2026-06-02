@@ -1,7 +1,7 @@
 package dev.picon.android.miyabinano.domain
 
-import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationClient
 import dev.picon.android.miyabinano.domain.genai.CapabilityInferenceAccess
+import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationClientFactory
 import dev.picon.android.miyabinano.domain.genai.toInferenceAccess
 import dev.picon.android.miyabinano.domain.genai.toCapabilityPreparationFailure
 import dev.picon.android.miyabinano.domain.model.InferenceCapability
@@ -17,16 +17,12 @@ import javax.inject.Singleton
 
 @Singleton
 class InferenceUseCase @Inject constructor(
-    clients: List<@JvmSuppressWildcards CapabilityPreparationClient>,
+    private val clientFactory: CapabilityPreparationClientFactory,
     private val memoryTracker: MemoryTracker
 ) {
-    private val clientsByCapability = clients.associateBy(CapabilityPreparationClient::capability)
-
     operator fun invoke(capability: InferenceCapability, inputText: String): Flow<InferenceResult> = flow {
+        val client = clientFactory.create(capability)
         try {
-            val client = checkNotNull(clientsByCapability[capability]) {
-                "No inference client configured for ${capability.name}"
-            }
             when (val access = client.checkReadiness().toInferenceAccess()) {
                 CapabilityInferenceAccess.Allowed -> Unit
                 is CapabilityInferenceAccess.Blocked -> {
@@ -80,6 +76,8 @@ class InferenceUseCase @Inject constructor(
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             emit(InferenceResult.Error(e.toCapabilityPreparationFailure()))
+        } finally {
+            client.close()
         }
     }
 }

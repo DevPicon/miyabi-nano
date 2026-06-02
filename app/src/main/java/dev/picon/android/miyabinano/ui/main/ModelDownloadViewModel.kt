@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationClient
+import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationClientFactory
 import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationState
 import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationStateMachine
 import dev.picon.android.miyabinano.domain.genai.toCapabilityPreparationFailure
@@ -18,9 +19,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ModelDownloadViewModel @Inject constructor(
-    clients: List<@JvmSuppressWildcards CapabilityPreparationClient>
+    clientFactory: CapabilityPreparationClientFactory
 ) : ViewModel() {
-    private val clientsByCapability = clients.associateBy(CapabilityPreparationClient::capability)
+    private val clientsByCapability = InferenceCapability.entries.associateWith(clientFactory::create)
 
     private val _states = MutableStateFlow<Map<InferenceCapability, CapabilityPreparationState>>(
         InferenceCapability.entries.associateWith {
@@ -109,5 +110,9 @@ class ModelDownloadViewModel @Inject constructor(
         state: CapabilityPreparationState
     ) {
         _states.update { it + (capability to state) }
+    }
+
+    override fun onCleared() {
+        clientsByCapability.values.forEach(CapabilityPreparationClient::close)
     }
 }
