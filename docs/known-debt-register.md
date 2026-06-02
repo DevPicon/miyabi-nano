@@ -5,7 +5,7 @@ the behavior has been implemented, verified, or reviewed.
 
 | Gap | Why It Matters | Owning Task |
 | --- | --- | --- |
-| Experiment records lack reproducibility context and structured export. | Results cannot be compared credibly across devices, configurations, or runs. | `TASK-18`, `TASK-19`, `TASK-22` |
+| Experiment records reserve reproducibility context but do not populate or export it yet. | Results cannot be compared credibly across devices, configurations, or runs until capture and export are implemented. | `TASK-19`, `TASK-22` |
 | Offline-after-provisioning behavior is claimed but not proven through a real-device protocol. | Offline-first credibility requires dated evidence, not inference from API documentation. | `TASK-25`, `TASK-30` |
 | Raw inference input and output text are stored locally by default. | On-device inference alone does not establish a privacy-preserving storage policy. | `TASK-37` |
 | Backup configuration remains a template while local experiment text is stored. | Sensitive experiment history may be eligible for implicit backup. | `TASK-38` |
