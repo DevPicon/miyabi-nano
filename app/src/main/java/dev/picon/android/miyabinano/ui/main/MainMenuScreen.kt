@@ -52,7 +52,7 @@ fun MainMenuScreen(
     onCapabilitySelected: (InferenceCapability) -> Unit,
     viewModel: ModelDownloadViewModel = hiltViewModel()
 ) {
-    val capabilityStates by viewModel.states.collectAsState()
+    val bootstrapState by viewModel.bootstrapState.collectAsState()
     val baseModelIdentity by viewModel.baseModelIdentity.collectAsState()
 
     val navigationBarsPadding = WindowInsets.navigationBars.asPaddingValues()
@@ -115,10 +115,10 @@ fun MainMenuScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         ModelDownloadSection(
-            states = capabilityStates,
+            bootstrapState = bootstrapState,
             baseModelIdentity = baseModelIdentity,
             onDownloadClick = viewModel::startProvisioning,
-            onRetryClick = viewModel::retry,
+            onRetryClick = viewModel::refresh,
             modifier = Modifier
                 .fillMaxWidth()
         )
@@ -171,10 +171,10 @@ private fun CapabilityCard(
 
 @Composable
 private fun ModelDownloadSection(
-    states: Map<InferenceCapability, CapabilityPreparationState>,
+    bootstrapState: CapabilityPreparationState,
     baseModelIdentity: BaseModelIdentityState,
-    onDownloadClick: (InferenceCapability) -> Unit,
-    onRetryClick: (InferenceCapability) -> Unit,
+    onDownloadClick: () -> Unit,
+    onRetryClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -215,16 +215,7 @@ private fun ModelDownloadSection(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            InferenceCapability.entries.forEach { capability ->
-                val state = states[capability] ?: CapabilityPreparationState.Checking
-
-                Text(
-                    text = capability.displayName,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium
-                )
-
-                when (state) {
+            when (bootstrapState) {
                 is CapabilityPreparationState.Checking -> {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -261,8 +252,8 @@ private fun ModelDownloadSection(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Button(onClick = { onDownloadClick(capability) }) {
-                            Text("Download")
+                        Button(onClick = onDownloadClick) {
+                            Text("Initial setup")
                         }
                     }
                 }
@@ -280,7 +271,7 @@ private fun ModelDownloadSection(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
-                                text = "${(state.progress * 100).toInt()}%",
+                                text = "${(bootstrapState.progress * 100).toInt()}%",
                                 style = MaterialTheme.typography.bodySmall,
                                 fontWeight = FontWeight.Medium
                             )
@@ -289,14 +280,14 @@ private fun ModelDownloadSection(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         LinearProgressIndicator(
-                            progress = { state.progress },
+                            progress = { bootstrapState.progress },
                             modifier = Modifier.fillMaxWidth(),
                         )
 
                         Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
-                            text = "${formatBytes(state.downloadedBytes)} / ${formatBytes(state.totalBytes)}",
+                            text = "${formatBytes(bootstrapState.downloadedBytes)} / ${formatBytes(bootstrapState.totalBytes)}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -328,13 +319,13 @@ private fun ModelDownloadSection(
                 is CapabilityPreparationState.Failed -> {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Text(
-                            text = state.failure.userMessage,
+                            text = bootstrapState.failure.userMessage,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error
                         )
 
                         Text(
-                            text = state.failure.recoveryGuidance,
+                            text = bootstrapState.failure.recoveryGuidance,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -342,20 +333,18 @@ private fun ModelDownloadSection(
                         Spacer(modifier = Modifier.height(4.dp))
 
                         Text(
-                            text = "Technical detail: ${state.failure.technicalDetail}",
+                            text = "Technical detail: ${bootstrapState.failure.technicalDetail}",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        TextButton(onClick = { onRetryClick(capability) }) {
+                        TextButton(onClick = onRetryClick) {
                             Text("Retry")
                         }
                     }
                 }
-            }
-                Spacer(modifier = Modifier.height(8.dp))
             }
         }
     }

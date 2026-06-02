@@ -6,6 +6,11 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.picon.android.miyabinano.data.MetricsRepository
 import dev.picon.android.miyabinano.domain.InferenceUseCase
+import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationClient
+import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationClientFactory
+import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationState
+import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationStateMachine
+import dev.picon.android.miyabinano.domain.genai.toCapabilityPreparationFailure
 import dev.picon.android.miyabinano.domain.model.InferenceCapability
 import dev.picon.android.miyabinano.domain.model.InferenceResult
 import dev.picon.android.miyabinano.domain.model.TestCase
@@ -14,6 +19,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,12 +27,14 @@ import javax.inject.Inject
 class InferenceViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val inferenceUseCase: InferenceUseCase,
-    private val metricsRepository: MetricsRepository
+    private val metricsRepository: MetricsRepository,
+    clientFactory: CapabilityPreparationClientFactory
 ) : ViewModel() {
 
     private val capability: InferenceCapability = InferenceCapability.valueOf(
         savedStateHandle.get<String>("capability") ?: InferenceCapability.SUMMARIZATION.name
     )
+    private val preparationClient = clientFactory.create(capability)
 
     private val _uiState = MutableStateFlow(
         InferenceUiState(
@@ -36,11 +44,60 @@ class InferenceViewModel @Inject constructor(
     )
     val uiState: StateFlow<InferenceUiState> = _uiState.asStateFlow()
 
+    init {
+        refreshPreparation()
+    }
+
+    fun refreshPreparation() {
+        viewModelScope.launch {
+            updatePreparationState(CapabilityPreparationState.Checking)
+            try {
+                updatePreparationState(
+                    CapabilityPreparationStateMachine.fromReadiness(
+                        preparationClient.checkReadiness()
+                    )
+                )
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                updatePreparationState(
+                    CapabilityPreparationStateMachine.onFailure(
+                        e.toCapabilityPreparationFailure()
+                    )
+                )
+            }
+        }
+    }
+
+    fun startProvisioning() {
+        viewModelScope.launch {
+            try {
+                preparationClient.provision { event ->
+                    updatePreparationState(
+                        CapabilityPreparationStateMachine.onProvisioningEvent(
+                            currentState = _uiState.value.preparationState,
+                            event = event
+                        )
+                    )
+                }
+                refreshPreparation()
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                updatePreparationState(
+                    CapabilityPreparationStateMachine.onFailure(
+                        e.toCapabilityPreparationFailure()
+                    )
+                )
+            }
+        }
+    }
+
     fun onInputTextChanged(text: String) {
+        if (_uiState.value.preparationState !is CapabilityPreparationState.Available) return
         _uiState.update { it.copy(inputText = text) }
     }
 
     fun onTestCaseSelected(testCase: TestCase) {
+        if (_uiState.value.preparationState !is CapabilityPreparationState.Available) return
         _uiState.update {
             it.copy(
                 selectedTestCase = testCase,
@@ -51,6 +108,7 @@ class InferenceViewModel @Inject constructor(
     }
 
     fun onShowTestCaseSelector() {
+        if (_uiState.value.preparationState !is CapabilityPreparationState.Available) return
         _uiState.update { it.copy(showTestCaseSelector = true) }
     }
 
@@ -73,6 +131,7 @@ class InferenceViewModel @Inject constructor(
     }
 
     fun onRunInference() {
+        if (_uiState.value.preparationState !is CapabilityPreparationState.Available) return
         val inputText = _uiState.value.inputText.trim()
         if (inputText.isEmpty()) {
             _uiState.update { it.copy(error = "Please enter some text") }
@@ -140,5 +199,13 @@ class InferenceViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun updatePreparationState(state: CapabilityPreparationState) {
+        _uiState.update { it.copy(preparationState = state) }
+    }
+
+    override fun onCleared() {
+        preparationClient.close()
     }
 }

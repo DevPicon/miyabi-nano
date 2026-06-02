@@ -21,11 +21,13 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -37,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import dev.picon.android.miyabinano.ui.components.MetricsCard
 import dev.picon.android.miyabinano.ui.components.TestDataSelectorDialog
+import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,6 +48,7 @@ fun InferenceScreen(
     viewModel: InferenceViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val isReady = uiState.preparationState is CapabilityPreparationState.Available
 
     Scaffold(
         topBar = {
@@ -80,12 +84,19 @@ fun InferenceScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
+            CapabilityPreparationCard(
+                state = uiState.preparationState,
+                onDownload = viewModel::startProvisioning,
+                onRetry = viewModel::refreshPreparation
+            )
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 OutlinedButton(
                     onClick = { viewModel.onShowTestCaseSelector() },
+                    enabled = isReady,
                     modifier = Modifier.weight(1f)
                 ) {
                     Text("Load Test Data")
@@ -111,7 +122,7 @@ fun InferenceScreen(
                     .height(200.dp),
                 label = { Text("Input Text") },
                 placeholder = { Text("Enter text to ${uiState.capability.name.lowercase()}...") },
-                enabled = !uiState.isProcessing,
+                enabled = isReady && !uiState.isProcessing,
                 supportingText = {
                     Text("${uiState.inputText.length} characters")
                 }
@@ -120,7 +131,7 @@ fun InferenceScreen(
             Button(
                 onClick = { viewModel.onRunInference() },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !uiState.isProcessing && uiState.inputText.isNotEmpty()
+                enabled = isReady && !uiState.isProcessing && uiState.inputText.isNotEmpty()
             ) {
                 if (uiState.isProcessing) {
                     CircularProgressIndicator(
@@ -207,6 +218,50 @@ fun InferenceScreen(
                 onTestCaseSelected = { viewModel.onTestCaseSelected(it) },
                 onDismiss = { viewModel.onHideTestCaseSelector() }
             )
+        }
+    }
+}
+
+@Composable
+private fun CapabilityPreparationCard(
+    state: CapabilityPreparationState,
+    onDownload: () -> Unit,
+    onRetry: () -> Unit
+) {
+    if (state is CapabilityPreparationState.Available) return
+
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            when (state) {
+                CapabilityPreparationState.Checking ->
+                    Text("Checking capability readiness...")
+                CapabilityPreparationState.Downloadable -> {
+                    Text("This experiment needs an additional on-device capability asset.")
+                    Button(onClick = onDownload) {
+                        Text("Set up capability")
+                    }
+                }
+                is CapabilityPreparationState.Downloading -> {
+                    Text("Setting up capability...")
+                    LinearProgressIndicator(
+                        progress = { state.progress },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+                CapabilityPreparationState.Unavailable ->
+                    Text("This experiment is not supported by the current device configuration.")
+                is CapabilityPreparationState.Failed -> {
+                    Text(state.failure.userMessage)
+                    Text(state.failure.recoveryGuidance)
+                    TextButton(onClick = onRetry) {
+                        Text("Retry")
+                    }
+                }
+                CapabilityPreparationState.Available -> Unit
+            }
         }
     }
 }

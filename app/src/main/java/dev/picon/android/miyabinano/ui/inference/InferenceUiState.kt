@@ -3,9 +3,11 @@ package dev.picon.android.miyabinano.ui.inference
 import dev.picon.android.miyabinano.domain.model.InferenceCapability
 import dev.picon.android.miyabinano.domain.model.InferenceMetrics
 import dev.picon.android.miyabinano.domain.model.TestCase
+import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationState
 
 data class InferenceUiState(
     val capability: InferenceCapability,
+    val preparationState: CapabilityPreparationState = CapabilityPreparationState.Checking,
     val inputText: String = "",
     val outputText: String = "",
     val isProcessing: Boolean = false,
