@@ -36,16 +36,16 @@ Restoring a compiling baseline is the first implementation prerequisite.
 
 ## What Is Superficial Or Misleading
 
-- The current `main` branch does not compile. Multi-capability work was committed
-  without a successful baseline build.
-- The main screen presents five capabilities as equally ready, while model
-  status and download lifecycle are checked only through the summarizer.
+- The baseline now compiles, but runtime validation remains incomplete across
+  supported and unsupported physical devices.
+- The main screen exposes per-capability download controls rather than a
+  concise bootstrap summary and experiment-level gating.
 - The active generic inference path does not call `checkFeatureStatus()` before
   inference and does not explain adapter downloads, transient provisioning, or
   unsupported configurations.
-- The old summarization flow and the new generic flow coexist. The old flow is
-  still wired in navigation but is no longer reachable from the visible main
-  menu.
+- The active inference path is unified behind the app-owned capability
+  boundary, but readiness gating and deterministic resource ownership remain
+  future work.
 - `InferenceUseCase` measures elapsed wall-clock time around one request and
   labels it inference latency. It does not distinguish cold preparation, warm
   inference, queueing, download wait, or UI-perceived time.
