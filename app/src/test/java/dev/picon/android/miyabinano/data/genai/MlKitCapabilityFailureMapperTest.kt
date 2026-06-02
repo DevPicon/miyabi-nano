@@ -21,4 +21,20 @@ class MlKitCapabilityFailureMapperTest {
         assertTrue("retry" in failure.recoveryGuidance.lowercase())
         assertTrue("unsupported" !in failure.userMessage.lowercase())
     }
+
+    @Test
+    fun wrappedIpcDisconnect_preservesUnderlyingTechnicalDetail() {
+        val rawMessage =
+            "AICore failed with error type 1-DOWNLOAD_ERROR and error code 6-IPC_ERROR: AICore service disconnected"
+
+        val failure = MlKitCapabilityFailureMapper.map(
+            IllegalStateException("Future failed", IllegalStateException(rawMessage))
+        )
+
+        assertEquals(
+            CapabilityPreparationFailure.Category.SERVICE_DISCONNECTED,
+            failure.category
+        )
+        assertEquals(rawMessage, failure.technicalDetail)
+    }
 }

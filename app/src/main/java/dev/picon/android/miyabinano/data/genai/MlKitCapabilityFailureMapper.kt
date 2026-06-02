@@ -4,7 +4,12 @@ import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationFailure
 
 object MlKitCapabilityFailureMapper {
     fun map(throwable: Throwable): CapabilityPreparationFailure {
-        val technicalDetail = throwable.message ?: throwable::class.java.simpleName
+        val causes = generateSequence(throwable) { it.cause }.toList()
+        val technicalDetail = causes
+            .mapNotNull(Throwable::message)
+            .firstOrNull { "IPC_ERROR" in it || "service disconnected" in it }
+            ?: throwable.message
+            ?: throwable::class.java.simpleName
 
         return if ("IPC_ERROR" in technicalDetail || "service disconnected" in technicalDetail) {
             CapabilityPreparationFailure(
