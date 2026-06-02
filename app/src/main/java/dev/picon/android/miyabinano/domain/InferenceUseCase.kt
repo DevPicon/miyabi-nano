@@ -1,6 +1,7 @@
 package dev.picon.android.miyabinano.domain
 
 import dev.picon.android.miyabinano.domain.genai.CapabilityInferenceAccess
+import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationClient
 import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationClientFactory
 import dev.picon.android.miyabinano.domain.genai.toInferenceAccess
 import dev.picon.android.miyabinano.domain.genai.toCapabilityPreparationFailure
@@ -21,8 +22,9 @@ class InferenceUseCase @Inject constructor(
     private val memoryTracker: MemoryTracker
 ) {
     operator fun invoke(capability: InferenceCapability, inputText: String): Flow<InferenceResult> = flow {
-        val client = clientFactory.create(capability)
+        var client: CapabilityPreparationClient? = null
         try {
+            client = clientFactory.create(capability)
             when (val access = client.checkReadiness().toInferenceAccess()) {
                 CapabilityInferenceAccess.Allowed -> Unit
                 is CapabilityInferenceAccess.Blocked -> {
@@ -77,7 +79,7 @@ class InferenceUseCase @Inject constructor(
             if (e is CancellationException) throw e
             emit(InferenceResult.Error(e.toCapabilityPreparationFailure()))
         } finally {
-            client.close()
+            client?.close()
         }
     }
 }
