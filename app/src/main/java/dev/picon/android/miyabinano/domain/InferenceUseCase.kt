@@ -8,6 +8,8 @@ import dev.picon.android.miyabinano.domain.genai.withClient
 import dev.picon.android.miyabinano.domain.model.InferenceCapability
 import dev.picon.android.miyabinano.domain.model.InferenceMetrics
 import dev.picon.android.miyabinano.domain.model.InferenceResult
+import dev.picon.android.miyabinano.domain.model.ExperimentContextInput
+import dev.picon.android.miyabinano.domain.model.ExperimentContextProvider
 import dev.picon.android.miyabinano.domain.util.MemoryTracker
 import dev.picon.android.miyabinano.domain.util.TokenCounter
 import kotlinx.coroutines.CancellationException
@@ -19,13 +21,15 @@ import javax.inject.Singleton
 @Singleton
 class InferenceUseCase @Inject constructor(
     private val clientFactory: CapabilityPreparationClientFactory,
-    private val memoryTracker: MemoryTracker
+    private val memoryTracker: MemoryTracker,
+    private val experimentContextProvider: ExperimentContextProvider
 ) {
     operator fun invoke(capability: InferenceCapability, inputText: String): Flow<InferenceResult> =
         flow {
             try {
                 clientFactory.withClient(capability) { client ->
-                    when (val access = client.checkReadiness().toInferenceAccess()) {
+                    val readiness = client.checkReadiness()
+                    when (val access = readiness.toInferenceAccess()) {
                         CapabilityInferenceAccess.Allowed -> Unit
                         is CapabilityInferenceAccess.Blocked -> {
                             emit(
@@ -45,6 +49,20 @@ class InferenceUseCase @Inject constructor(
 
                     val inputTokenCount = TokenCounter.estimateTokens(inputText)
                     val inputCharCount = inputText.length
+                    val baseModelName = try {
+                        client.getBaseModelName()
+                    } catch (e: Exception) {
+                        if (e is CancellationException) throw e
+                        null
+                    }
+                    val experimentContext = experimentContextProvider.capture(
+                        ExperimentContextInput(
+                            baseModelName = baseModelName,
+                            featureStatusBeforeRun = readiness,
+                            heuristicInputSize = inputTokenCount,
+                            outcomeCategory = "SUCCESS"
+                        )
+                    )
 
                     client.prepareInferenceEngine()
                     val outputText = client.runInference(inputText)
@@ -71,7 +89,8 @@ class InferenceUseCase @Inject constructor(
                         inferenceTimeMs = inferenceTimeMs,
                         totalTimeMs = totalTimeMs,
                         processHeapDeltaMB = endMemory - startMemory,
-                        runtimeMaxHeapMB = runtimeMaxHeap
+                        runtimeMaxHeapMB = runtimeMaxHeap,
+                        experimentContext = experimentContext
                     )
 
                     emit(InferenceResult.Success(outputText, metrics))
