@@ -6,12 +6,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -32,8 +29,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -47,6 +46,7 @@ import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationState
 import dev.picon.android.miyabinano.domain.genai.BaseModelIdentityState
 import dev.picon.android.miyabinano.domain.model.InferenceCapability
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainMenuScreen(
     onCapabilitySelected: (InferenceCapability) -> Unit,
@@ -55,33 +55,46 @@ fun MainMenuScreen(
     val bootstrapState by viewModel.bootstrapState.collectAsState()
     val baseModelIdentity by viewModel.baseModelIdentity.collectAsState()
 
-    val navigationBarsPadding = WindowInsets.navigationBars.asPaddingValues()
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(
-                top = 16.dp,
-                start = 16.dp,
-                end = 16.dp,
-                bottom = 16.dp + navigationBarsPadding.calculateBottomPadding()
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Miyabi Nano",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             )
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-            Text(
-                text = "Miyabi Nano",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
-            )
-
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
             Text(
                 text = "On-device AI with Gemini Nano",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            ModelDownloadSection(
+                bootstrapState = bootstrapState,
+                baseModelIdentity = baseModelIdentity,
+                onDownloadClick = viewModel::startProvisioning,
+                onRetryClick = viewModel::refresh,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Text(
+                text = "Experiments",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
 
             CapabilityCard(
                 capability = InferenceCapability.SUMMARIZATION,
@@ -112,16 +125,7 @@ fun MainMenuScreen(
                 icon = Icons.Default.ShortText,
                 onClick = { onCapabilitySelected(InferenceCapability.REWRITE_CONCISE) }
             )
-        Spacer(modifier = Modifier.height(8.dp))
-
-        ModelDownloadSection(
-            bootstrapState = bootstrapState,
-            baseModelIdentity = baseModelIdentity,
-            onDownloadClick = viewModel::startProvisioning,
-            onRetryClick = viewModel::refresh,
-            modifier = Modifier
-                .fillMaxWidth()
-        )
+        }
     }
 }
 
