@@ -1,8 +1,21 @@
 # Miyabi Nano
 
-An Android application demonstrating on-device text summarization using Google's Gemini Nano model.
+An Android engineering study of OS-supported on-device AI through Android AICore
+and ML Kit GenAI APIs.
 
-> **Educational Purpose:** This project is designed for learning and educational purposes, demonstrating how to integrate and run Google's Gemini Nano language model on Android devices for on-device text summarization.
+`miyabi-nano` explores what application engineers still own when the platform
+vendor supplies the model execution path: capability detection, provisioning UX,
+lifecycle behavior, failure handling, measurement, privacy boundaries, and
+realistic product limits.
+
+This repository is not intended to mirror `iki-nano`. The portfolio lanes answer
+different engineering questions:
+
+- `iki-nano` explores iOS self-managed runtime engineering.
+- `miyabi-nano` explores Android OS-supported on-device AI experimentation.
+
+The goal is evidence-backed educational material, not feature parity and not a
+wrapper-demo feature checklist.
 
 ## Screenshots
 
