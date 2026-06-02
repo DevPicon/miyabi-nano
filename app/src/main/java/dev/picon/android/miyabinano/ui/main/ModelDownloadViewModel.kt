@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -33,29 +34,16 @@ class ModelDownloadViewModel @Inject constructor(
     }
 
     fun refreshAll() {
-        clientsByCapability.keys.forEach(::checkStatus)
+        viewModelScope.launch {
+            clientsByCapability.keys.forEach { capability ->
+                checkStatusNow(capability)
+            }
+        }
     }
 
     fun checkStatus(capability: InferenceCapability) {
-        val client = clientsByCapability[capability] ?: return
-
         viewModelScope.launch {
-            updateState(capability, CapabilityPreparationState.Checking)
-            try {
-                updateState(
-                    capability,
-                    CapabilityPreparationStateMachine.fromReadiness(
-                        client.checkReadiness()
-                    )
-                )
-            } catch (e: Exception) {
-                updateState(
-                    capability,
-                    CapabilityPreparationStateMachine.onFailure(
-                        e.message ?: "Failed to check capability status"
-                    )
-                )
-            }
+            checkStatusNow(capability)
         }
     }
 
@@ -78,6 +66,7 @@ class ModelDownloadViewModel @Inject constructor(
                 }
                 checkStatus(capability)
             } catch (e: Exception) {
+                if (e is CancellationException) throw e
                 updateState(
                     capability,
                     CapabilityPreparationStateMachine.onFailure(
@@ -90,6 +79,28 @@ class ModelDownloadViewModel @Inject constructor(
 
     fun retry(capability: InferenceCapability) {
         checkStatus(capability)
+    }
+
+    private suspend fun checkStatusNow(capability: InferenceCapability) {
+        val client = clientsByCapability[capability] ?: return
+
+        updateState(capability, CapabilityPreparationState.Checking)
+        try {
+            updateState(
+                capability,
+                CapabilityPreparationStateMachine.fromReadiness(
+                    client.checkReadiness()
+                )
+            )
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            updateState(
+                capability,
+                CapabilityPreparationStateMachine.onFailure(
+                    e.message ?: "Failed to check capability status"
+                )
+            )
+        }
     }
 
     private fun updateState(
