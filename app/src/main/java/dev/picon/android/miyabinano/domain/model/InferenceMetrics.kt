@@ -21,5 +21,7 @@ data class InferenceMetrics(
     val totalTimeMs: Long,
 
     val processHeapDeltaMB: Long,
-    val runtimeMaxHeapMB: Long
+    val runtimeMaxHeapMB: Long,
+    val experimentContext: ExperimentContext = ExperimentContext(),
+    val timingMilestones: TimingMilestones = TimingMilestones()
 )
