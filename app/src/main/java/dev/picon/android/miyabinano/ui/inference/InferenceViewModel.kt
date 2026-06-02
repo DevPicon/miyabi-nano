@@ -16,6 +16,7 @@ import dev.picon.android.miyabinano.domain.model.InferenceResult
 import dev.picon.android.miyabinano.domain.model.AppDiagnostics
 import dev.picon.android.miyabinano.domain.model.AppDiagnosticsProvider
 import dev.picon.android.miyabinano.domain.model.TestCase
+import dev.picon.android.miyabinano.domain.model.SummarizationInputPolicy
 import dev.picon.android.miyabinano.domain.repository.TestDataRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -155,6 +156,18 @@ class InferenceViewModel @Inject constructor(
             _uiState.update {
                 it.copy(
                     error = "Please enter some text",
+                    errorTechnicalDetail = null
+                )
+            }
+            return
+        }
+        val summarizationEvaluation = inputText
+            .takeIf { capability == InferenceCapability.SUMMARIZATION }
+            ?.let(SummarizationInputPolicy::evaluate)
+        if (summarizationEvaluation?.meetsMinimum == false) {
+            _uiState.update {
+                it.copy(
+                    error = summarizationEvaluation.guidance,
                     errorTechnicalDetail = null
                 )
             }

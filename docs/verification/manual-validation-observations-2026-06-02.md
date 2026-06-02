@@ -22,6 +22,10 @@ are not a complete device matrix.
   followed by repeated failures on later attempts using the same input. The
   retained SDK detail was: `Couldn't generate a response. Try a different
   input.`
+- Proofreading and rewriting continued to work while summarization repeatedly
+  returned the response-generation failure, including with a different baked
+  summarization fixture. This narrows the observation to the configured
+  summarization API path rather than Gemini Nano availability in general.
 
 ## Interpretation
 
@@ -31,6 +35,11 @@ are not a complete device matrix.
   Repeating the same input can legitimately repeat a response-generation
   failure. `TASK-29` owns controlled comparison using the same input, different
   input, navigation away and back, and app relaunch.
+- Official ML Kit documentation requires `ARTICLE` input to exceed 400
+  characters and states that the model performs best with at least 300 words.
+  Existing baked summarization probes were mostly valid but below that
+  recommended range; one was below the hard minimum. `TASK-54` owns input
+  boundary enforcement and stronger fixtures.
 - Successful inference context is persisted but not inspectable through a
   secondary UI surface. `TASK-51` owns a diagnostics modal.
 - The home model card is the key platform signal and should appear before

@@ -44,6 +44,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import dev.picon.android.miyabinano.ui.components.MetricsCard
 import dev.picon.android.miyabinano.ui.components.TestDataSelectorDialog
 import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationState
+import dev.picon.android.miyabinano.domain.model.InferenceCapability
+import dev.picon.android.miyabinano.domain.model.SummarizationInputPolicy
 import dev.picon.android.miyabinano.ui.components.DiagnosticsDialog
 import dev.picon.android.miyabinano.ui.components.diagnosticsLabel
 import dev.picon.android.miyabinano.ui.components.failureDetailOrNull
@@ -57,6 +59,10 @@ fun InferenceScreen(
     val uiState by viewModel.uiState.collectAsState()
     val diagnostics by viewModel.diagnostics.collectAsState()
     val isReady = uiState.preparationState is CapabilityPreparationState.Available
+    val summarizationEvaluation = uiState.inputText
+        .takeIf { uiState.capability == InferenceCapability.SUMMARIZATION }
+        ?.let(SummarizationInputPolicy::evaluate)
+    val inputMeetsCapabilityBoundary = summarizationEvaluation?.meetsMinimum != false
     var showDiagnostics by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
@@ -146,14 +152,22 @@ fun InferenceScreen(
                 placeholder = { Text("Enter text to ${uiState.capability.name.lowercase()}...") },
                 enabled = isReady && !uiState.isProcessing,
                 supportingText = {
-                    Text("${uiState.inputText.length} characters")
+                    Column {
+                        Text("${uiState.inputText.length} characters")
+                        summarizationEvaluation?.guidance?.let { guidance ->
+                            Text(guidance)
+                        }
+                    }
                 }
             )
 
             Button(
                 onClick = { viewModel.onRunInference() },
                 modifier = Modifier.fillMaxWidth(),
-                enabled = isReady && !uiState.isProcessing && uiState.inputText.isNotEmpty()
+                enabled = isReady &&
+                    !uiState.isProcessing &&
+                    uiState.inputText.isNotEmpty() &&
+                    inputMeetsCapabilityBoundary
             ) {
                 if (uiState.isProcessing) {
                     CircularProgressIndicator(
