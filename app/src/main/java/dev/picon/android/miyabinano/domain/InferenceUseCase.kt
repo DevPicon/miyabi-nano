@@ -16,7 +16,7 @@ import dev.picon.android.miyabinano.domain.util.MemoryTracker
 import dev.picon.android.miyabinano.domain.util.TokenCounter
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.guava.await
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -42,23 +42,23 @@ class InferenceUseCase @Inject constructor(
             val outputText = when (capability) {
                 InferenceCapability.SUMMARIZATION -> {
                     val request = SummarizationRequest.builder(inputText).build()
-                    summarizer.runInference(request).await().result
+                    summarizer.runInference(request).await().summary
                 }
                 InferenceCapability.PROOFREADING -> {
                     val request = ProofreadingRequest.builder(inputText).build()
-                    proofreader.runInference(request).await().result
+                    proofreader.runInference(request).await().results.first().text
                 }
                 InferenceCapability.REWRITE_FORMAL -> {
                     val request = RewritingRequest.builder(inputText).build()
-                    formalRewriter.runInference(request).await().result
+                    formalRewriter.runInference(request).await().results.first().text
                 }
                 InferenceCapability.REWRITE_CASUAL -> {
                     val request = RewritingRequest.builder(inputText).build()
-                    casualRewriter.runInference(request).await().result
+                    casualRewriter.runInference(request).await().results.first().text
                 }
                 InferenceCapability.REWRITE_CONCISE -> {
                     val request = RewritingRequest.builder(inputText).build()
-                    conciseRewriter.runInference(request).await().result
+                    conciseRewriter.runInference(request).await().results.first().text
                 }
             }
 
