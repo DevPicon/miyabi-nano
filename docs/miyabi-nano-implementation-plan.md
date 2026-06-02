@@ -41,7 +41,7 @@ remediation subtasks directly after their parent using suffixes such as
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `TASK-01` | `COMPLETE` | `TASK-12` | `NOT STARTED` | `TASK-23` | `NOT STARTED` | `TASK-34` | `NOT STARTED` |
 | `TASK-02` | `COMPLETE` | `TASK-13` | `NOT STARTED` | `TASK-24` | `NOT STARTED` | `TASK-35` | `NOT STARTED` |
-| `TASK-03` | `NOT STARTED` | `TASK-14` | `NOT STARTED` | `TASK-25` | `NOT STARTED` | `TASK-36` | `NOT STARTED` |
+| `TASK-03` | `IN PROGRESS` | `TASK-14` | `NOT STARTED` | `TASK-25` | `NOT STARTED` | `TASK-36` | `NOT STARTED` |
 | `TASK-04` | `NOT STARTED` | `TASK-15` | `NOT STARTED` | `TASK-26` | `NOT STARTED` | `TASK-37` | `NOT STARTED` |
 | `TASK-05` | `NOT STARTED` | `TASK-16` | `NOT STARTED` | `TASK-27` | `NOT STARTED` | `TASK-38` | `NOT STARTED` |
 | `TASK-06` | `NOT STARTED` | `TASK-17` | `NOT STARTED` | `TASK-28` | `NOT STARTED` | `TASK-39` | `NOT STARTED` |
