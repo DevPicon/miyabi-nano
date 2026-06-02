@@ -5,8 +5,11 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationClient
 import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationClientFactory
+import dev.picon.android.miyabinano.domain.genai.BaseModelIdentityState
+import dev.picon.android.miyabinano.domain.genai.BaseModelIdentityStateMachine
 import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationState
 import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationStateMachine
+import dev.picon.android.miyabinano.domain.genai.CapabilityReadiness
 import dev.picon.android.miyabinano.domain.genai.toCapabilityPreparationFailure
 import dev.picon.android.miyabinano.domain.model.InferenceCapability
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,6 +33,11 @@ class ModelDownloadViewModel @Inject constructor(
     )
     val states: StateFlow<Map<InferenceCapability, CapabilityPreparationState>> =
         _states.asStateFlow()
+
+    private val _baseModelIdentity =
+        MutableStateFlow<BaseModelIdentityState>(BaseModelIdentityState.Checking)
+    val baseModelIdentity: StateFlow<BaseModelIdentityState> =
+        _baseModelIdentity.asStateFlow()
 
     init {
         refreshAll()
@@ -88,19 +96,43 @@ class ModelDownloadViewModel @Inject constructor(
 
         updateState(capability, CapabilityPreparationState.Checking)
         try {
+            val readiness = client.checkReadiness()
             updateState(
                 capability,
-                CapabilityPreparationStateMachine.fromReadiness(
-                    client.checkReadiness()
-                )
+                CapabilityPreparationStateMachine.fromReadiness(readiness)
             )
+            updateBaseModelIdentity(capability, readiness)
         } catch (e: Exception) {
             if (e is CancellationException) throw e
+            val failure = e.toCapabilityPreparationFailure()
             updateState(
                 capability,
-                CapabilityPreparationStateMachine.onFailure(
-                    e.toCapabilityPreparationFailure()
-                )
+                CapabilityPreparationStateMachine.onFailure(failure)
+            )
+            if (capability == InferenceCapability.SUMMARIZATION) {
+                _baseModelIdentity.value = BaseModelIdentityState.Failed(failure)
+            }
+        }
+    }
+
+    private suspend fun updateBaseModelIdentity(
+        capability: InferenceCapability,
+        readiness: CapabilityReadiness
+    ) {
+        if (capability != InferenceCapability.SUMMARIZATION) return
+
+        _baseModelIdentity.value = BaseModelIdentityStateMachine.fromBootstrapReadiness(readiness)
+        if (readiness != CapabilityReadiness.AVAILABLE) {
+            return
+        }
+
+        val client = clientsByCapability.getValue(capability)
+        try {
+            _baseModelIdentity.value = BaseModelIdentityState.Available(client.getBaseModelName())
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            _baseModelIdentity.value = BaseModelIdentityState.Failed(
+                e.toCapabilityPreparationFailure()
             )
         }
     }

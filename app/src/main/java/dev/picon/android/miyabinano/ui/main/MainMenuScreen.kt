@@ -44,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationState
+import dev.picon.android.miyabinano.domain.genai.BaseModelIdentityState
 import dev.picon.android.miyabinano.domain.model.InferenceCapability
 
 @Composable
@@ -52,6 +53,7 @@ fun MainMenuScreen(
     viewModel: ModelDownloadViewModel = hiltViewModel()
 ) {
     val capabilityStates by viewModel.states.collectAsState()
+    val baseModelIdentity by viewModel.baseModelIdentity.collectAsState()
 
     val navigationBarsPadding = WindowInsets.navigationBars.asPaddingValues()
 
@@ -114,6 +116,7 @@ fun MainMenuScreen(
 
         ModelDownloadSection(
             states = capabilityStates,
+            baseModelIdentity = baseModelIdentity,
             onDownloadClick = viewModel::startProvisioning,
             onRetryClick = viewModel::retry,
             modifier = Modifier
@@ -169,6 +172,7 @@ private fun CapabilityCard(
 @Composable
 private fun ModelDownloadSection(
     states: Map<InferenceCapability, CapabilityPreparationState>,
+    baseModelIdentity: BaseModelIdentityState,
     onDownloadClick: (InferenceCapability) -> Unit,
     onRetryClick: (InferenceCapability) -> Unit,
     modifier: Modifier = Modifier
@@ -190,6 +194,23 @@ private fun ModelDownloadSection(
                 text = "Gemini Nano Model",
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = when (baseModelIdentity) {
+                    BaseModelIdentityState.Checking -> "Gemini Nano identity: checking..."
+                    BaseModelIdentityState.NotReady -> "Gemini Nano identity: available after initial setup"
+                    is BaseModelIdentityState.Available ->
+                        "Gemini Nano identity: ${baseModelIdentity.name}"
+                    BaseModelIdentityState.Unavailable ->
+                        "Gemini Nano identity: unavailable for this configuration"
+                    is BaseModelIdentityState.Failed ->
+                        "Gemini Nano identity: could not be retrieved"
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Spacer(modifier = Modifier.height(8.dp))
