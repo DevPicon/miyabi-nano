@@ -11,6 +11,8 @@ import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationStateMachi
 import dev.picon.android.miyabinano.domain.genai.CapabilityReadiness
 import dev.picon.android.miyabinano.domain.genai.toCapabilityPreparationFailure
 import dev.picon.android.miyabinano.domain.model.InferenceCapability
+import dev.picon.android.miyabinano.domain.model.AppDiagnostics
+import dev.picon.android.miyabinano.domain.model.AppDiagnosticsProvider
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,7 +22,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ModelDownloadViewModel @Inject constructor(
-    clientFactory: CapabilityPreparationClientFactory
+    clientFactory: CapabilityPreparationClientFactory,
+    private val diagnosticsProvider: AppDiagnosticsProvider
 ) : ViewModel() {
     private val bootstrapClient = clientFactory.create(InferenceCapability.SUMMARIZATION)
 
@@ -32,6 +35,9 @@ class ModelDownloadViewModel @Inject constructor(
         MutableStateFlow<BaseModelIdentityState>(BaseModelIdentityState.Checking)
     val baseModelIdentity: StateFlow<BaseModelIdentityState> =
         _baseModelIdentity.asStateFlow()
+
+    private val _diagnostics = MutableStateFlow(diagnosticsProvider.capture())
+    val diagnostics: StateFlow<AppDiagnostics> = _diagnostics.asStateFlow()
 
     init {
         refresh()
@@ -51,6 +57,10 @@ class ModelDownloadViewModel @Inject constructor(
                 _baseModelIdentity.value = BaseModelIdentityState.Failed(failure)
             }
         }
+    }
+
+    fun refreshDiagnostics() {
+        _diagnostics.value = diagnosticsProvider.capture()
     }
 
     fun startProvisioning() {

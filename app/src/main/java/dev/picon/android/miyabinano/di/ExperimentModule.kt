@@ -5,6 +5,7 @@ import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.picon.android.miyabinano.data.AndroidExperimentContextProvider
+import dev.picon.android.miyabinano.domain.model.AppDiagnosticsProvider
 import dev.picon.android.miyabinano.domain.model.ExperimentContextProvider
 import javax.inject.Singleton
 
@@ -16,4 +17,10 @@ abstract class ExperimentModule {
     abstract fun bindExperimentContextProvider(
         provider: AndroidExperimentContextProvider
     ): ExperimentContextProvider
+
+    @Binds
+    @Singleton
+    abstract fun bindAppDiagnosticsProvider(
+        provider: AndroidExperimentContextProvider
+    ): AppDiagnosticsProvider
 }

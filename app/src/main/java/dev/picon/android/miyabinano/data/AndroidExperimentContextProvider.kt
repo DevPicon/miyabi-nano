@@ -11,6 +11,8 @@ import dev.picon.android.miyabinano.domain.model.ExperimentContext
 import dev.picon.android.miyabinano.domain.model.ExperimentContextInput
 import dev.picon.android.miyabinano.domain.model.ExperimentContextProvider
 import dev.picon.android.miyabinano.domain.model.ExperimentSchema
+import dev.picon.android.miyabinano.domain.model.AppDiagnostics
+import dev.picon.android.miyabinano.domain.model.AppDiagnosticsProvider
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -18,25 +20,41 @@ import javax.inject.Singleton
 @Singleton
 class AndroidExperimentContextProvider @Inject constructor(
     @ApplicationContext private val context: Context
-) : ExperimentContextProvider {
+) : ExperimentContextProvider, AppDiagnosticsProvider {
     private val runSequence = AtomicInteger()
 
-    override fun capture(input: ExperimentContextInput): ExperimentContext =
-        ExperimentContext(
-            appVersion = appVersion(),
-            deviceManufacturer = Build.MANUFACTURER,
-            deviceModel = Build.MODEL,
-            androidBuild = Build.DISPLAY,
-            apiLevel = Build.VERSION.SDK_INT,
+    override fun capture(input: ExperimentContextInput): ExperimentContext {
+        val diagnostics = capture()
+        return ExperimentContext(
+            appVersion = diagnostics.appVersion,
+            deviceManufacturer = diagnostics.deviceManufacturer,
+            deviceModel = diagnostics.deviceModel,
+            androidBuild = diagnostics.androidBuild,
+            apiLevel = diagnostics.apiLevel,
             baseModelName = input.baseModelName,
             featureStatusBeforeRun = input.featureStatusBeforeRun.name,
-            connectivity = connectivity(),
-            powerState = powerState(),
-            thermalStatus = thermalStatus(),
+            connectivity = diagnostics.connectivity,
+            powerState = diagnostics.powerState,
+            thermalStatus = diagnostics.thermalStatus,
             runSequence = runSequence.incrementAndGet(),
             fixtureId = input.fixtureId,
             heuristicInputSize = input.heuristicInputSize,
             outcomeCategory = input.outcomeCategory
+        )
+    }
+
+    override fun capture(): AppDiagnostics =
+        AppDiagnostics(
+            appVersion = appVersion(),
+            databaseVersion = AppDatabase.DATABASE_VERSION,
+            experimentSchemaVersion = ExperimentSchema.CURRENT_VERSION,
+            deviceManufacturer = Build.MANUFACTURER,
+            deviceModel = Build.MODEL,
+            androidBuild = Build.DISPLAY,
+            apiLevel = Build.VERSION.SDK_INT,
+            connectivity = connectivity(),
+            powerState = powerState(),
+            thermalStatus = thermalStatus()
         )
 
     private fun appVersion(): String = annotation {

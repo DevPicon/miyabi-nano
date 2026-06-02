@@ -18,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Article
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.material.icons.filled.ShortText
 import androidx.compose.material.icons.filled.TextFields
@@ -27,6 +28,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -36,6 +38,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -45,6 +50,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationState
 import dev.picon.android.miyabinano.domain.genai.BaseModelIdentityState
 import dev.picon.android.miyabinano.domain.model.InferenceCapability
+import dev.picon.android.miyabinano.ui.components.DiagnosticsDialog
+import dev.picon.android.miyabinano.ui.components.diagnosticsLabel
+import dev.picon.android.miyabinano.ui.components.exposedNameOrNull
+import dev.picon.android.miyabinano.ui.components.failureDetailOrNull
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,6 +63,8 @@ fun MainMenuScreen(
 ) {
     val bootstrapState by viewModel.bootstrapState.collectAsState()
     val baseModelIdentity by viewModel.baseModelIdentity.collectAsState()
+    val diagnostics by viewModel.diagnostics.collectAsState()
+    var showDiagnostics by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -64,6 +75,19 @@ fun MainMenuScreen(
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold
                     )
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            viewModel.refreshDiagnostics()
+                            showDiagnostics = true
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "Platform diagnostics"
+                        )
+                    }
                 }
             )
         }
@@ -126,6 +150,18 @@ fun MainMenuScreen(
                 onClick = { onCapabilitySelected(InferenceCapability.REWRITE_CONCISE) }
             )
         }
+    }
+
+    if (showDiagnostics) {
+        DiagnosticsDialog(
+            diagnostics = diagnostics,
+            readiness = bootstrapState.diagnosticsLabel(),
+            baseModelName = baseModelIdentity.exposedNameOrNull(),
+            latestRunContext = null,
+            latestFailureDetail = bootstrapState.failureDetailOrNull()
+                ?: baseModelIdentity.failureDetailOrNull(),
+            onDismiss = { showDiagnostics = false }
+        )
     }
 }
 

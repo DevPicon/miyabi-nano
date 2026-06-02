@@ -13,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -32,6 +33,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -40,6 +44,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import dev.picon.android.miyabinano.ui.components.MetricsCard
 import dev.picon.android.miyabinano.ui.components.TestDataSelectorDialog
 import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationState
+import dev.picon.android.miyabinano.ui.components.DiagnosticsDialog
+import dev.picon.android.miyabinano.ui.components.diagnosticsLabel
+import dev.picon.android.miyabinano.ui.components.failureDetailOrNull
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +55,9 @@ fun InferenceScreen(
     viewModel: InferenceViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val diagnostics by viewModel.diagnostics.collectAsState()
     val isReady = uiState.preparationState is CapabilityPreparationState.Available
+    var showDiagnostics by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -64,6 +73,19 @@ fun InferenceScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            viewModel.refreshDiagnostics()
+                            showDiagnostics = true
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = "Platform diagnostics"
                         )
                     }
                 }
@@ -226,6 +248,18 @@ fun InferenceScreen(
                 testCases = uiState.availableTestCases,
                 onTestCaseSelected = { viewModel.onTestCaseSelected(it) },
                 onDismiss = { viewModel.onHideTestCaseSelector() }
+            )
+        }
+
+        if (showDiagnostics) {
+            DiagnosticsDialog(
+                diagnostics = diagnostics,
+                readiness = uiState.preparationState.diagnosticsLabel(),
+                baseModelName = uiState.metrics?.experimentContext?.baseModelName,
+                latestRunContext = uiState.metrics?.experimentContext,
+                latestFailureDetail = uiState.errorTechnicalDetail
+                    ?: uiState.preparationState.failureDetailOrNull(),
+                onDismiss = { showDiagnostics = false }
             )
         }
     }

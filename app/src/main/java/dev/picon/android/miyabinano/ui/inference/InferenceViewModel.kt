@@ -13,6 +13,8 @@ import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationStateMachi
 import dev.picon.android.miyabinano.domain.genai.toCapabilityPreparationFailure
 import dev.picon.android.miyabinano.domain.model.InferenceCapability
 import dev.picon.android.miyabinano.domain.model.InferenceResult
+import dev.picon.android.miyabinano.domain.model.AppDiagnostics
+import dev.picon.android.miyabinano.domain.model.AppDiagnosticsProvider
 import dev.picon.android.miyabinano.domain.model.TestCase
 import dev.picon.android.miyabinano.domain.repository.TestDataRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +30,7 @@ class InferenceViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val inferenceUseCase: InferenceUseCase,
     private val metricsRepository: MetricsRepository,
+    private val diagnosticsProvider: AppDiagnosticsProvider,
     clientFactory: CapabilityPreparationClientFactory
 ) : ViewModel() {
 
@@ -43,6 +46,9 @@ class InferenceViewModel @Inject constructor(
         )
     )
     val uiState: StateFlow<InferenceUiState> = _uiState.asStateFlow()
+
+    private val _diagnostics = MutableStateFlow(diagnosticsProvider.capture())
+    val diagnostics: StateFlow<AppDiagnostics> = _diagnostics.asStateFlow()
 
     init {
         refreshPreparation()
@@ -66,6 +72,10 @@ class InferenceViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    fun refreshDiagnostics() {
+        _diagnostics.value = diagnosticsProvider.capture()
     }
 
     fun startProvisioning() {
