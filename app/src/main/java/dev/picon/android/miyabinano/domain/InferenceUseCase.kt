@@ -1,6 +1,8 @@
 package dev.picon.android.miyabinano.domain
 
 import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationClient
+import dev.picon.android.miyabinano.domain.genai.CapabilityInferenceAccess
+import dev.picon.android.miyabinano.domain.genai.toInferenceAccess
 import dev.picon.android.miyabinano.domain.model.InferenceCapability
 import dev.picon.android.miyabinano.domain.model.InferenceMetrics
 import dev.picon.android.miyabinano.domain.model.InferenceResult
@@ -21,6 +23,22 @@ class InferenceUseCase @Inject constructor(
 
     operator fun invoke(capability: InferenceCapability, inputText: String): Flow<InferenceResult> = flow {
         try {
+            val client = checkNotNull(clientsByCapability[capability]) {
+                "No inference client configured for ${capability.name}"
+            }
+            when (val access = client.checkReadiness().toInferenceAccess()) {
+                CapabilityInferenceAccess.Allowed -> Unit
+                is CapabilityInferenceAccess.Blocked -> {
+                    emit(
+                        InferenceResult.Blocked(
+                            message = access.message,
+                            recoveryGuidance = access.recoveryGuidance
+                        )
+                    )
+                    return@flow
+                }
+            }
+
             emit(InferenceResult.Loading)
 
             val totalStartTime = System.currentTimeMillis()
@@ -29,9 +47,6 @@ class InferenceUseCase @Inject constructor(
             val inputTokenCount = TokenCounter.estimateTokens(inputText)
             val inputCharCount = inputText.length
 
-            val client = checkNotNull(clientsByCapability[capability]) {
-                "No inference client configured for ${capability.name}"
-            }
             client.prepareInferenceEngine()
             val outputText = client.runInference(inputText)
 

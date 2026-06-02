@@ -65,7 +65,9 @@ class InferenceViewModel @Inject constructor(
                 selectedTestCase = null,
                 outputText = "",
                 metrics = null,
-                error = null
+                error = null,
+                blockingReason = null,
+                recoveryGuidance = null
             )
         }
     }
@@ -93,6 +95,8 @@ class InferenceViewModel @Inject constructor(
                             it.copy(
                                 isProcessing = true,
                                 error = null,
+                                blockingReason = null,
+                                recoveryGuidance = null,
                                 outputText = "",
                                 metrics = null
                             )
@@ -107,6 +111,16 @@ class InferenceViewModel @Inject constructor(
                                 isProcessing = false,
                                 outputText = result.outputText,
                                 metrics = result.metrics,
+                                error = null
+                            )
+                        }
+                    }
+                    is InferenceResult.Blocked -> {
+                        _uiState.update {
+                            it.copy(
+                                isProcessing = false,
+                                blockingReason = result.message,
+                                recoveryGuidance = result.recoveryGuidance,
                                 error = null
                             )
                         }

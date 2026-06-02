@@ -7,5 +7,9 @@ sealed interface InferenceResult {
         val outputText: String,
         val metrics: InferenceMetrics
     ) : InferenceResult
+    data class Blocked(
+        val message: String,
+        val recoveryGuidance: String
+    ) : InferenceResult
     data class Error(val message: String) : InferenceResult
 }

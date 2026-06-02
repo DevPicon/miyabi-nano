@@ -151,6 +151,27 @@ fun InferenceScreen(
                 }
             }
 
+            if (uiState.blockingReason != null) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    )
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = uiState.blockingReason ?: "",
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                        Text(
+                            text = uiState.recoveryGuidance ?: "",
+                            modifier = Modifier.padding(top = 8.dp),
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    }
+                }
+            }
+
             if (uiState.outputText.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
 
