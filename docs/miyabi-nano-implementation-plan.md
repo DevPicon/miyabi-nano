@@ -43,7 +43,7 @@ remediation subtasks directly after their parent using suffixes such as
 | Task | Status | Task | Status | Task | Status | Task | Status |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `TASK-01` | `COMPLETE` | `TASK-12` | `COMPLETE` | `TASK-23` | `NOT STARTED` | `TASK-34` | `NOT STARTED` |
-| `TASK-02` | `COMPLETE` | `TASK-13` | `COMPLETE` | `TASK-24` | `IN PROGRESS` | `TASK-35` | `NOT STARTED` |
+| `TASK-02` | `COMPLETE` | `TASK-13` | `COMPLETE` | `TASK-24` | `COMPLETE` | `TASK-35` | `NOT STARTED` |
 | `TASK-03` | `COMPLETE` | `TASK-14` | `COMPLETE` | `TASK-25` | `NOT STARTED` | `TASK-36` | `NOT STARTED` |
 | `TASK-04` | `COMPLETE` | `TASK-15` | `COMPLETE` | `TASK-26` | `NOT STARTED` | `TASK-37` | `NOT STARTED` |
 | `TASK-05` | `COMPLETE` | `TASK-16` | `COMPLETE` | `TASK-27` | `NOT STARTED` | `TASK-38` | `NOT STARTED` |
