@@ -321,6 +321,7 @@ SOFTWARE.
 
 ## Additional Resources
 
+- [Miyabi Nano Platform Glossary](docs/platform-glossary.md)
 - [Google AI on Android Documentation](https://developer.android.com/ai)
 - [Jetpack Compose Documentation](https://developer.android.com/jetpack/compose/documentation)
 - [Gemini Nano Overview](https://ai.google.dev/gemini-api/docs/models/gemini#gemini-nano)
