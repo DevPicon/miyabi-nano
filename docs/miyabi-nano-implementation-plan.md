@@ -55,6 +55,7 @@ remediation subtasks directly after their parent using suffixes such as
 | `TASK-11` | `COMPLETE` | `TASK-22` | `NOT STARTED` | `TASK-33` | `NOT STARTED` | `TASK-44` | `NOT STARTED` |
 | `TASK-45` | `COMPLETE` | `TASK-46` | `COMPLETE` | `TASK-47` | `COMPLETE` | `TASK-48` | `NOT STARTED` |
 | `TASK-49` | `COMPLETE` | `TASK-50` | `NOT STARTED` |  |  |  |  |
+| `TASK-51` | `NOT STARTED` | `TASK-52` | `NOT STARTED` | `TASK-53` | `NOT STARTED` |  |  |
 
 ## Phase 0A: Restore A Verifiable Baseline
 
@@ -133,6 +134,17 @@ provisioning behavior, inputs, and failure modes.
 | `TASK-49` | Capability expansion | Investigate speech-recognition scope | Verify whether a current official Android on-device speech-recognition API belongs in this repository and document its platform boundary before adding code. Do not describe Speech Recognition as an ML Kit GenAI API unless an official primary source supports that claim. | `TASK-17`, `TASK-47` | The plan either cites a primary Android API source and defines a separately scoped experiment, or records why speech recognition remains out of scope. |
 | `TASK-50` | Capability expansion | Add Prompt API experiment | Add the Prompt Alpha API as a separately gated experiment. Expose the retrieved Nano model version, model-family support boundary, prompt fixture identity, and safety limitations. Do not route arbitrary prompts through feature-specific API assumptions. | `TASK-17`, `TASK-46`, `TASK-47` | Prompt experiments run only on a verified supported configuration and record whether the device exposes a compatible Nano model family. |
 
+## Phase 1C: Make Platform Context Inspectable
+
+**Objective:** Keep the primary experiment UI focused while making secondary
+platform evidence available throughout the app.
+
+| ID | Type | Task | Definition | Dependency | Task-level acceptance |
+| --- | --- | --- | --- | --- | --- |
+| `TASK-51` | Lifecycle | Add global diagnostics modal | Add an app-level secondary-information action available from the home screen and experiment screens. Display stable app, database, experiment-schema, device, Android-build, API-level, Gemini Nano identity, and readiness information. Include latest successful-run context where available without presenting current annotations as benchmark evidence. | `TASK-19`, `TASK-46`, `TASK-47` | A reviewer can inspect the Room database version and reproducibility context without querying Room directly. The modal distinguishes app-level diagnostics from latest-run observations. |
+| `TASK-52` | Lifecycle | Make primary screens system-bar safe | Use Material scaffold and inset-aware top bars for the home and experiment surfaces. Place the Gemini Nano model card above the experiment list because model readiness is the primary platform signal. | `TASK-47` | Home and experiment headers do not overlap system bars, and the Nano model summary appears before experiment navigation. |
+| `TASK-53` | Lifecycle | Upgrade Compose to remove frame-rate log spam | Upgrade the Compose BOM and resolved UI artifacts to a version that includes the AndroidX fix for continuous `setRequestedFrameRate frameRate=NaN` logcat spam on API 35+ devices. Verify the repository no longer emits the repeated warning during normal text-entry, scrolling, and redraw paths, and record the exact upgraded versions and verification date. | `TASK-52` | The app resolves to a Compose UI version that includes the AndroidX fix, normal interaction on a current Android 15 or Android 16 device no longer floods logcat with repeated `setRequestedFrameRate frameRate=NaN` messages, and the dependency change is documented with verification evidence. |
+
 **Phase acceptance:** New API families reuse lifecycle evidence where valid and
 remain separately gated where platform support differs. The repository explains
 why a working text feature-specific API does not prove Prompt API, Advanced
@@ -171,7 +183,7 @@ behavior. Label them accurately and supplement them with Android tooling.
 | `TASK-25` | Offline and interruption | Define offline-after-provisioning protocol | Document the real-device sequence: provision online, record readiness, disable connectivity, relaunch, run each prepared capability, and export evidence. | `TASK-22`, `TASK-23` | The protocol is reproducible and distinguishes offline-before-provisioning from offline-after-provisioning. |
 | `TASK-26` | Offline and interruption | Implement offline provisioning UX | Add explicit UI states for offline-before-provisioning and interrupted provisioning with honest retry guidance. | `TASK-14`, `TASK-25` | Users are not told offline inference is ready when required capability assets are missing. |
 | `TASK-27` | Offline and interruption | Handle configuration changes | Verify and fix rotation behavior during provisioning and inference. Preserve or reconcile state without duplicate work. | `TASK-13`, `TASK-16` | Rotation does not create duplicate inference, lose terminal state, or leave a stuck UI. |
-| `TASK-28` | Offline and interruption | Handle foreground loss | Treat `BACKGROUND_USE_BLOCKED` as an expected platform outcome. Reconcile UI state when inference loses foreground eligibility. | `TASK-15` | Backgrounding during inference produces a defined, recoverable result. |
+| `TASK-28` | Offline and interruption | Handle foreground loss | Treat `BACKGROUND_USE_BLOCKED` as an expected platform outcome. Reconcile UI state when inference loses foreground eligibility. Preserve the raw SDK detail when a foreground-loss observation arrives through a less-specific processing error so the UI does not incorrectly instruct the user to edit valid input. | `TASK-15` | Backgrounding during inference produces a defined, recoverable result or an honestly labeled ambiguous AICore interruption. Valid input is not blamed without evidence. |
 | `TASK-29` | Offline and interruption | Handle user interruption | Verify and fix rapid repeated requests, cancellation, navigation away, app relaunch, and process recreation. | `TASK-27`, `TASK-28` | User interruption never leaves duplicate work or an indefinite processing state. |
 | `TASK-30` | Offline and interruption | Add lifecycle automation and device evidence | Add deterministic instrumented tests for state restoration and cancellation. Record real-device-only scenarios separately with dated evidence. | `TASK-26`, `TASK-27`, `TASK-28`, `TASK-29` | Automated checks cover deterministic behavior and the real-device report covers AICore-dependent cases. |
 
@@ -230,18 +242,16 @@ what was observed, under which conditions, and what remains unknown.
 
 ## Immediate Next Task
 
-Implement `TASK-13` next, then proceed through the remaining Phase 1 lifecycle
-tasks in dependency order. Retrieve base-model identity in `TASK-46`, simplify
-the bootstrap-oriented home UX in `TASK-47`, and expand API families only after
-the lifecycle test gate closes:
+Implement `TASK-28` next because physical-device validation observed an
+incorrectly classified background interruption. Then implement `TASK-51`,
+`TASK-52`, and `TASK-53` to expose secondary diagnostics, make the primary
+surfaces system-bar safe, and remove known Compose log noise on current Android
+releases. Continue with `TASK-22` before expanding API families:
 
-> Unify inference orchestration, gate every experiment by its configured
-> capability readiness, map typed AICore failures, define resource ownership,
-> retrieve Gemini Nano identity, and replace the home download matrix with an
-> honest bootstrap summary. Add Image Description, Speech Recognition, and
-> Prompt experiments only after the lifecycle path is verified.
+> Preserve the foreground-only AICore boundary honestly, expose inspectable
+> diagnostics without cluttering the primary flow, and export reproducibility
+> evidence before adding more capability families.
 
-This is the highest-leverage next step because every later claim depends on
-knowing which Nano model was observed, whether a configured capability is
-supported, provisioned, usable in the current lifecycle state, and failing for
-a reason the application can explain.
+This is the highest-leverage next step because the observed background failure
+currently produces misleading recovery guidance, while the stored evidence
+cannot yet be inspected or exported conveniently.
