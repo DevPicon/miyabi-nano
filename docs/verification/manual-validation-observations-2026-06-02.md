@@ -1,7 +1,9 @@
 # Manual Validation Observations: 2026-06-02
 
-These observations were reported from Android Studio physical-device sessions.
-They are useful evidence inputs, but they are not a complete device matrix.
+These observations were reported from Android Studio physical-device sessions
+on an attached Samsung `SM-F731B`. ADB reported Android API `36` and build
+`BP2A.250605.031.A3.F731BXXS6FZC5`. They are useful evidence inputs, but they
+are not a complete device matrix.
 
 ## Observed
 
@@ -29,7 +31,7 @@ They are useful evidence inputs, but they are not a complete device matrix.
 
 ## Still Unknown
 
-- Exact tested device identity and Android build for each reported session.
+- Whether every reported session ran on the attached Samsung `SM-F731B`.
 - The raw SDK exception detail emitted during the observed foreground-loss
   interruption.
 - Unsupported-device UX.

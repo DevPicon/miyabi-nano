@@ -18,7 +18,7 @@ data class CapabilityPreparationFailure(
         BATTERY_QUOTA_EXCEEDED,
         INPUT_TOO_LARGE,
         INPUT_TOO_SMALL,
-        POLICY_REJECTION,
+        PROCESSING_INTERRUPTED,
         UNKNOWN
     }
 }

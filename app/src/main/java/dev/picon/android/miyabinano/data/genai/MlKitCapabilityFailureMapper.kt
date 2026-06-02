@@ -86,9 +86,9 @@ object MlKitCapabilityFailureMapper {
             GenAiException.ErrorCode.REQUEST_PROCESSING_ERROR,
             GenAiException.ErrorCode.RESPONSE_PROCESSING_ERROR,
             GenAiException.ErrorCode.RESPONSE_GENERATION_ERROR -> failure(
-                CapabilityPreparationFailure.Category.POLICY_REJECTION,
-                "AICore could not process this request or response.",
-                "Adjust the input and retry.",
+                CapabilityPreparationFailure.Category.PROCESSING_INTERRUPTED,
+                "AICore interrupted this inference request.",
+                "Keep the app in the foreground and retry. If the failure repeats while foregrounded, adjust the input.",
                 technicalDetail
             )
             else -> failure(

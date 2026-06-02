@@ -61,15 +61,17 @@ class MlKitCapabilityFailureMapperTest {
     }
 
     @Test
-    fun policyFailures_shareAStableExperimentCategory() {
+    fun genericProcessingFailure_doesNotBlameInputWithoutEvidence() {
         val failure = MlKitCapabilityFailureMapper.map(
             genAiException(GenAiException.ErrorCode.RESPONSE_PROCESSING_ERROR)
         )
 
         assertEquals(
-            CapabilityPreparationFailure.Category.POLICY_REJECTION,
+            CapabilityPreparationFailure.Category.PROCESSING_INTERRUPTED,
             failure.category
         )
+        assertTrue("foreground" in failure.recoveryGuidance.lowercase())
+        assertTrue(!failure.userMessage.lowercase().contains("adjust"))
     }
 
     private fun genAiException(errorCode: Int): GenAiException =

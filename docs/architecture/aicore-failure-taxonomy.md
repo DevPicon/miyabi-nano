@@ -16,7 +16,7 @@ categories before failures reach UI or future experiment persistence.
 | `BATTERY_QUOTA_EXCEEDED` | Documented code `27` | Retry after quota recovery |
 | `INPUT_TOO_LARGE` | `REQUEST_TOO_LARGE` | Shorten input |
 | `INPUT_TOO_SMALL` | `REQUEST_TOO_SMALL` | Lengthen input |
-| `POLICY_REJECTION` | Request or response processing and generation policy errors | Adjust input |
+| `PROCESSING_INTERRUPTED` | Request, response, or generation processing errors | Keep the app foregrounded and retry; adjust input only if the failure repeats while foregrounded |
 | `UNKNOWN` | Any unrecognized outcome | Retain technical detail and retry cautiously |
 
 The installed `com.google.mlkit:genai-common:1.0.0-beta1` artifact does not
