@@ -121,7 +121,9 @@ class InferenceViewModel @Inject constructor(
                                 isProcessing = false,
                                 blockingReason = result.message,
                                 recoveryGuidance = result.recoveryGuidance,
-                                error = null
+                                error = null,
+                                outputText = "",
+                                metrics = null
                             )
                         }
                     }
@@ -129,7 +131,9 @@ class InferenceViewModel @Inject constructor(
                         _uiState.update {
                             it.copy(
                                 isProcessing = false,
-                                error = result.message
+                                error = result.message,
+                                blockingReason = null,
+                                recoveryGuidance = null
                             )
                         }
                     }
