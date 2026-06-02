@@ -22,6 +22,15 @@ class SummarizationInputPolicyTest {
     }
 
     @Test
+    fun approximateOversizedArticle_surfacesTokenLimitAdvisory() {
+        val evaluation = SummarizationInputPolicy.evaluate("word ".repeat(3000))
+
+        assertTrue(evaluation.meetsMinimum)
+        assertTrue(evaluation.mayExceedTokenLimit)
+        assertTrue("4000-token" in evaluation.guidance.orEmpty())
+    }
+
+    @Test
     fun summarizationFixtures_areValidAndIncludeRecommendedRangeArticle() {
         val evaluations = TestDataRepository.summarizationTests.map { testCase ->
             SummarizationInputPolicy.evaluate(testCase.inputText)

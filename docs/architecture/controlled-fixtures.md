@@ -8,6 +8,10 @@ article contains more than 400 characters, and at least one article contains
 articles remain useful boundary probes but must not be presented as equivalent
 quality evidence.
 
+ML Kit also requires summarization input below 4000 tokens, approximately 3000
+English words. The app surfaces an advisory near that approximate word count;
+it does not claim that whitespace word counting is model tokenization.
+
 Each `TestCase` provides:
 
 - a stable fixture ID
