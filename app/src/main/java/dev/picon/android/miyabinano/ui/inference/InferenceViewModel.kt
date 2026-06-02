@@ -93,7 +93,14 @@ class InferenceViewModel @Inject constructor(
 
     fun onInputTextChanged(text: String) {
         if (_uiState.value.preparationState !is CapabilityPreparationState.Available) return
-        _uiState.update { it.copy(inputText = text) }
+        _uiState.update {
+            it.copy(
+                inputText = text,
+                selectedTestCase = it.selectedTestCase?.takeIf { testCase ->
+                    testCase.inputText == text
+                }
+            )
+        }
     }
 
     fun onTestCaseSelected(testCase: TestCase) {
