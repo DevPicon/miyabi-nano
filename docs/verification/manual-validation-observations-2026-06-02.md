@@ -29,6 +29,11 @@ are not a complete device matrix.
 - The revised recommended-range summarization article continued to fail. The
   repository now treats this as a summarization-specific negative result under
   investigation rather than a missing Gemini Nano model.
+- After uninstalling and reinstalling the app, Summarization produced output
+  again. This proves the configured Summarization path and model can work on
+  the tested device, but it does not yet identify whether process restart,
+  app-data removal, or another reinstall side effect was the smallest recovery
+  boundary.
 
 ## Interpretation
 
@@ -47,6 +52,10 @@ are not a complete device matrix.
   prompt. The public boundary is `SummarizationRequest.builder(text).build()`
   plus `SummarizerOptions`. `TASK-55` exposes the exact app-submitted SDK
   request snapshot without inventing an internal prompt.
+- The app already creates and closes a fresh Summarizer for each inference
+  attempt. Reinstall recovery therefore cannot be explained by ordinary client
+  recreation alone. `TASK-56` owns a controlled recovery-boundary experiment
+  before any recovery UX is added.
 - Successful inference context is persisted but not inspectable through a
   secondary UI surface. `TASK-51` owns a diagnostics modal.
 - The home model card is the key platform signal and should appear before
@@ -58,6 +67,8 @@ are not a complete device matrix.
 - Whether every reported session ran on the attached Samsung `SM-F731B`.
 - Whether the diagnostics modal affected inference or merely coincided with a
   repeatable response-generation failure for that input.
+- Whether app process restart, app-data clear, or full reinstall is the
+  smallest action that recovers a repeated Summarization failure.
 - Unsupported-device UX.
 - Offline-after-provisioning behavior.
 - Physical-device battery, thermal, and quota behavior.

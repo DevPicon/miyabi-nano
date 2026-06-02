@@ -35,7 +35,8 @@ Enforce summarization article-input boundaries.
   - `sum_casual_1`: 100 words, 624 characters.
   - `sum_short_1`: 94 words, 659 characters.
   - `sum_long_1`: 353 words, 2703 characters.
-- Physical-device summarization rerun with `sum_long_1` remains required.
+- Physical-device summarization rerun with `sum_long_1` failed before
+  uninstall and reinstall. Summarization produced output again after reinstall.
 
 ## Commit
 
@@ -49,7 +50,8 @@ Enforce summarization article-input boundaries.
 - Passing the documented input boundary does not guarantee response generation
   for every article.
 - The Samsung physical-device summarization failure remains under
-  investigation until the recommended-range fixture is tested.
+  investigation because reinstall recovered the feature, but the smallest
+  required recovery boundary is unknown.
 
 ## Independent Review
 
@@ -87,16 +89,15 @@ Enforce summarization article-input boundaries.
   by both UI state and the ViewModel entry point.
 
 9. Final Verdict
-- PARTIAL: no S0 issue remains. Keep `TASK-54` open until the Samsung device
-  reruns `sum_long_1` and records whether recommended-range input succeeds.
+- PARTIAL: no S0 issue remains. Keep `TASK-54` open until `TASK-56` identifies
+  the smallest recovery boundary for the observed Samsung failure.
 
 10. Required Fixes
 - Completed in `318418b`: surface the documented upper token-limit guidance
   without pretending app word counting is model tokenization.
-- Pending manual verification: rerun Summarization with the revised
-  `Research Summary` fixture.
+- Pending manual verification: execute the controlled recovery-boundary matrix
+  in `TASK-56`.
 
 11. Non-blocking Recommendations
-- If the recommended-range fixture still fails, record the summarization path
-  as an observed device-specific negative result before attempting further SDK
-  workarounds.
+- Do not add an unsupported model-reset action. ML Kit exposes client close and
+  recreation but no public feature-reset API.
