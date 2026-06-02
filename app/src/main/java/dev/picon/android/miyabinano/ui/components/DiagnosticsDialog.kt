@@ -42,7 +42,7 @@ fun DiagnosticsDialog(
                     title = "App",
                     values = listOf(
                         "App version" to diagnostics.appVersion,
-                        "Room database version" to diagnostics.databaseVersion.toString(),
+                        "Room target schema version" to diagnostics.databaseVersion.toString(),
                         "Experiment schema version" to
                             diagnostics.experimentSchemaVersion.toString()
                     )
