@@ -34,6 +34,7 @@ Handle foreground loss.
 
 - `edec8fd TASK-28 handle ambiguous foreground interruptions`
 - `8da2fb7 TASK-28 retain inference failure details`
+- `6a56570 TASK-28 keep generic processing failures neutral`
 
 ## Known Limitations
 
@@ -51,15 +52,16 @@ Handle foreground loss.
 
 2. Correctness Review
 - PASS after correction: documented code `30` remains precise, generic
-  processing errors remain honest about ambiguity, and raw SDK detail survives
-  the inference UI boundary.
+  processing errors remain neutral, and raw SDK detail survives the inference
+  UI boundary. Repeated same-input failure is not mislabeled as stale UI,
+  foreground loss, or poisoned client state.
 
 3. Concurrency and Lifecycle Safety
 - PASS: existing structured ViewModel coroutine ownership remains unchanged.
 
 4. UI and UX Contract
-- PASS after correction: valid input is no longer blamed immediately, and the
-  visible technical detail supports physical-device evidence capture.
+- PASS after correction: the UI suggests one retry before different input and
+  displays technical detail for physical-device evidence capture.
 
 5. Platform Compatibility
 - PASS with a physical-device boundary: forward-compatible numeric code `30`
@@ -79,13 +81,14 @@ Handle foreground loss.
 
 9. Final Verdict
 - PARTIAL: no S0 issue remains and implementation is ready for physical-device
-  revalidation. Keep `TASK-28` open until the Samsung rerun records the new
-  user-facing guidance and technical detail.
+  revalidation. Keep `TASK-28` open until the Samsung rerun records the neutral
+  guidance and compares same-input versus different-input outcomes.
 
 10. Required Fixes
 - Completed in `8da2fb7`: retain and display raw inference failure detail.
-- Pending manual verification: rerun background loss on the attached Samsung
-  `SM-F731B`.
+- Completed in `6a56570`: keep generic processing failures neutral.
+- Pending manual verification: rerun on attached Samsung `SM-F731B`, comparing
+  same input, different input, navigation away and back, and app relaunch.
 
 11. Non-blocking Recommendations
 - Feed latest failure detail into the global diagnostics modal planned in
