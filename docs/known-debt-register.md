@@ -11,7 +11,7 @@ the behavior has been implemented, verified, or reviewed.
 | Offline-after-provisioning behavior is claimed but not proven through a real-device protocol. | Offline-first credibility requires dated evidence, not inference from API documentation. | `TASK-25`, `TASK-30` |
 | Raw inference input and output text are stored locally by default. | On-device inference alone does not establish a privacy-preserving storage policy. | `TASK-37` |
 | Backup configuration remains a template while local experiment text is stored. | Sensitive experiment history may be eligible for implicit backup. | `TASK-38` |
-| Unit-test coverage is minimal and the instrumentation test remains generated placeholder evidence. | Lifecycle and Android-specific claims are not protected by realistic automation. | `TASK-17`, `TASK-30` |
+| Android instrumentation coverage remains generated placeholder evidence. | Android-specific lifecycle claims are not yet protected by realistic instrumentation. | `TASK-30` |
 | Device-support evidence is incomplete. | An attached device identity is not proof of configured-feature readiness or behavior. | `TASK-30`, `TASK-39` |
 | Gemini Nano base-model identity is not surfaced or persisted. | Output variability across Nano versions cannot be explained or reproduced credibly without `getBaseModelName()` evidence. | `TASK-46`, `TASK-18`, `TASK-19` |
 | Image Description, Speech Recognition, and Prompt APIs are not represented. | These APIs are educationally relevant but have distinct maturity levels, inputs, and support matrices. Adding them prematurely would hide rather than teach platform constraints. | `TASK-48`, `TASK-49`, `TASK-50` |
