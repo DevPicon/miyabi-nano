@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dev.picon.android.miyabinano.domain.model.AppDiagnostics
 import dev.picon.android.miyabinano.domain.model.ExperimentContext
+import dev.picon.android.miyabinano.domain.model.InferenceRequestSnapshot
 
 @Composable
 fun DiagnosticsDialog(
@@ -25,6 +26,7 @@ fun DiagnosticsDialog(
     baseModelName: String?,
     latestRunContext: ExperimentContext?,
     latestFailureDetail: String?,
+    latestRequestSnapshot: InferenceRequestSnapshot?,
     onDismiss: () -> Unit
 ) {
     AlertDialog(
@@ -83,6 +85,19 @@ fun DiagnosticsDialog(
                     DiagnosticsSection(
                         title = "Latest visible failure",
                         values = listOf("SDK detail" to detail)
+                    )
+                }
+                latestRequestSnapshot?.let { snapshot ->
+                    DiagnosticsSection(
+                        title = "Latest app-submitted SDK request",
+                        values = listOf(
+                            "Request type" to snapshot.requestType,
+                            "Internal prompt" to snapshot.internalPromptVisibility
+                        ) + snapshot.options
+                    )
+                    DiagnosticsSection(
+                        title = "Latest submitted input text",
+                        values = listOf("Text" to snapshot.inputText)
                     )
                 }
             }

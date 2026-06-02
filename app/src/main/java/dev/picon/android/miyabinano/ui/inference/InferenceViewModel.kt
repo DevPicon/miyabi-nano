@@ -17,6 +17,7 @@ import dev.picon.android.miyabinano.domain.model.AppDiagnostics
 import dev.picon.android.miyabinano.domain.model.AppDiagnosticsProvider
 import dev.picon.android.miyabinano.domain.model.TestCase
 import dev.picon.android.miyabinano.domain.model.SummarizationInputPolicy
+import dev.picon.android.miyabinano.domain.model.InferenceRequestSnapshotFactory
 import dev.picon.android.miyabinano.domain.repository.TestDataRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -172,6 +173,14 @@ class InferenceViewModel @Inject constructor(
                 )
             }
             return
+        }
+        _uiState.update {
+            it.copy(
+                latestRequestSnapshot = InferenceRequestSnapshotFactory.create(
+                    capability = capability,
+                    inputText = inputText
+                )
+            )
         }
 
         viewModelScope.launch {

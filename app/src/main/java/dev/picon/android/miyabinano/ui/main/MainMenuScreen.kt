@@ -160,6 +160,7 @@ fun MainMenuScreen(
             latestRunContext = null,
             latestFailureDetail = bootstrapState.failureDetailOrNull()
                 ?: baseModelIdentity.failureDetailOrNull(),
+            latestRequestSnapshot = null,
             onDismiss = { showDiagnostics = false }
         )
     }

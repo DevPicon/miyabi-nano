@@ -56,6 +56,7 @@ remediation subtasks directly after their parent using suffixes such as
 | `TASK-45` | `COMPLETE` | `TASK-46` | `COMPLETE` | `TASK-47` | `COMPLETE` | `TASK-48` | `NOT STARTED` |
 | `TASK-49` | `COMPLETE` | `TASK-50` | `NOT STARTED` |  |  |  |  |
 | `TASK-51` | `IN PROGRESS` | `TASK-52` | `IN PROGRESS` | `TASK-53` | `NOT STARTED` | `TASK-54` | `IN PROGRESS` |
+| `TASK-55` | `IN PROGRESS` |  |  |  |  |  |  |
 
 ## Phase 0A: Restore A Verifiable Baseline
 
@@ -145,6 +146,7 @@ platform evidence available throughout the app.
 | `TASK-52` | Lifecycle | Make primary screens system-bar safe | Use Material scaffold and inset-aware top bars for the home and experiment surfaces. Place the Gemini Nano model card above the experiment list because model readiness is the primary platform signal. | `TASK-47` | Home and experiment headers do not overlap system bars, and the Nano model summary appears before experiment navigation. |
 | `TASK-53` | Lifecycle | Upgrade Compose to remove frame-rate log spam | Upgrade the Compose BOM and resolved UI artifacts to a version that includes the AndroidX fix for continuous `setRequestedFrameRate frameRate=NaN` logcat spam on API 35+ devices. Verify the repository no longer emits the repeated warning during normal text-entry, scrolling, and redraw paths, and record the exact upgraded versions and verification date. | `TASK-52` | The app resolves to a Compose UI version that includes the AndroidX fix, normal interaction on a current Android 15 or Android 16 device no longer floods logcat with repeated `setRequestedFrameRate frameRate=NaN` messages, and the dependency change is documented with verification evidence. |
 | `TASK-54` | Lifecycle | Enforce summarization article-input boundaries | Encode the official ML Kit article-summarization minimum of more than 400 characters, surface the documented 300-word best-performing guidance without treating it as a hard requirement, and strengthen controlled summarization fixtures. Record that `AVAILABLE` status proves configured-feature readiness but not successful generation for every input. | `TASK-24`, `TASK-28` | Invalid short articles cannot be submitted, valid but suboptimal articles are labeled honestly, at least one baked summarization article is in the recommended range, and tests enforce the boundary. |
+| `TASK-55` | Lifecycle | Expose last SDK request snapshot | Add a diagnostics-only, in-memory snapshot of the latest attempted feature-API request. For summarization, display the exact article text and public client options while stating that ML Kit does not expose its platform-managed internal prompt. Do not add implicit payload persistence. | `TASK-51`, `TASK-54` | After a successful or failed attempt, diagnostics show the exact app-submitted SDK request fields and input text without claiming access to an internal prompt. |
 
 **Phase acceptance:** New API families reuse lifecycle evidence where valid and
 remain separately gated where platform support differs. The repository explains

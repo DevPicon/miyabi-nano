@@ -4,6 +4,7 @@ import dev.picon.android.miyabinano.domain.model.InferenceCapability
 import dev.picon.android.miyabinano.domain.model.InferenceMetrics
 import dev.picon.android.miyabinano.domain.model.TestCase
 import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationState
+import dev.picon.android.miyabinano.domain.model.InferenceRequestSnapshot
 
 data class InferenceUiState(
     val capability: InferenceCapability,
@@ -16,6 +17,7 @@ data class InferenceUiState(
     val blockingReason: String? = null,
     val recoveryGuidance: String? = null,
     val metrics: InferenceMetrics? = null,
+    val latestRequestSnapshot: InferenceRequestSnapshot? = null,
     val selectedTestCase: TestCase? = null,
     val availableTestCases: List<TestCase> = emptyList(),
     val showTestCaseSelector: Boolean = false

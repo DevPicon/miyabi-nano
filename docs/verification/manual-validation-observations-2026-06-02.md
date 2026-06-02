@@ -26,6 +26,9 @@ are not a complete device matrix.
   returned the response-generation failure, including with a different baked
   summarization fixture. This narrows the observation to the configured
   summarization API path rather than Gemini Nano availability in general.
+- The revised recommended-range summarization article continued to fail. The
+  repository now treats this as a summarization-specific negative result under
+  investigation rather than a missing Gemini Nano model.
 
 ## Interpretation
 
@@ -40,6 +43,10 @@ are not a complete device matrix.
   Existing baked summarization probes were mostly valid but below that
   recommended range; one was below the hard minimum. `TASK-54` owns input
   boundary enforcement and stronger fixtures.
+- ML Kit feature-specific summarization does not expose a developer-authored
+  prompt. The public boundary is `SummarizationRequest.builder(text).build()`
+  plus `SummarizerOptions`. `TASK-55` exposes the exact app-submitted SDK
+  request snapshot without inventing an internal prompt.
 - Successful inference context is persisted but not inspectable through a
   secondary UI surface. `TASK-51` owns a diagnostics modal.
 - The home model card is the key platform signal and should appear before

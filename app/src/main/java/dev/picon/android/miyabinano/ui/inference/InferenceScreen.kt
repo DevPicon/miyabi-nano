@@ -273,6 +273,7 @@ fun InferenceScreen(
                 latestRunContext = uiState.metrics?.experimentContext,
                 latestFailureDetail = uiState.errorTechnicalDetail
                     ?: uiState.preparationState.failureDetailOrNull(),
+                latestRequestSnapshot = uiState.latestRequestSnapshot,
                 onDismiss = { showDiagnostics = false }
             )
         }
