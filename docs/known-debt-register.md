@@ -5,7 +5,6 @@ the behavior has been implemented, verified, or reviewed.
 
 | Gap | Why It Matters | Owning Task |
 | --- | --- | --- |
-| Current peak-memory reporting exposes the runtime maximum heap limit. | The UI can misrepresent a heap limit as observed model or system-memory behavior. | `TASK-21` |
 | Experiment records lack reproducibility context and structured export. | Results cannot be compared credibly across devices, configurations, or runs. | `TASK-18`, `TASK-19`, `TASK-22` |
 | Offline-after-provisioning behavior is claimed but not proven through a real-device protocol. | Offline-first credibility requires dated evidence, not inference from API documentation. | `TASK-25`, `TASK-30` |
 | Raw inference input and output text are stored locally by default. | On-device inference alone does not establish a privacy-preserving storage policy. | `TASK-37` |
