@@ -8,7 +8,7 @@ Map typed AICore failures.
 
 - Expanded the app-owned failure taxonomy for incompatibility, system update,
   unavailable feature, disk pressure, busy service, cancellation, foreground
-  blocking, battery quota, input bounds, policy rejection, observed IPC
+  blocking, battery quota, input bounds, generic processing failure, observed IPC
   disconnect, and unknown failures.
 - Mapped ML Kit `GenAiException` values inside the adapter layer before they
   cross into domain and UI code.
@@ -68,7 +68,8 @@ Map typed AICore failures.
 
 6. Test Quality
 - PASS for the mapping layer: tests cover observed IPC details, wrapped
-  exceptions, disk pressure, foreground blocking, and policy grouping.
+  exceptions, disk pressure, foreground blocking, and generic processing
+  grouping.
 
 7. Documentation Consistency
 - PASS: the architecture taxonomy documents mappings, recovery boundaries,
@@ -88,3 +89,10 @@ Map typed AICore failures.
 11. Non-blocking Recommendations
 - Persist failure categories in the experiment schema during `TASK-18`.
 - Capture physical-device observations for external-state-dependent outcomes.
+
+## Later Evidence
+
+`TASK-28` superseded the original processing-failure wording after physical
+device validation retained the SDK detail: `Couldn't generate a response. Try a
+different input.` Generic processing failures remain neutral and do not claim
+policy rejection or foreground interruption without evidence.

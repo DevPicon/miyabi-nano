@@ -61,17 +61,18 @@ class MlKitCapabilityFailureMapperTest {
     }
 
     @Test
-    fun genericProcessingFailure_doesNotBlameInputWithoutEvidence() {
+    fun genericProcessingFailure_doesNotClaimForegroundLossWithoutEvidence() {
         val failure = MlKitCapabilityFailureMapper.map(
             genAiException(GenAiException.ErrorCode.RESPONSE_PROCESSING_ERROR)
         )
 
         assertEquals(
-            CapabilityPreparationFailure.Category.PROCESSING_INTERRUPTED,
+            CapabilityPreparationFailure.Category.PROCESSING_FAILED,
             failure.category
         )
         assertTrue("foreground" in failure.recoveryGuidance.lowercase())
-        assertTrue(!failure.userMessage.lowercase().contains("adjust"))
+        assertTrue("different input" in failure.recoveryGuidance.lowercase())
+        assertTrue(!failure.userMessage.lowercase().contains("interrupt"))
     }
 
     private fun genAiException(errorCode: Int): GenAiException =

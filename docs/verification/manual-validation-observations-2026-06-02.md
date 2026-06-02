@@ -18,11 +18,19 @@ are not a complete device matrix.
 - Backgrounding the app during summarization interrupted inference. The UI
   displayed: `AICore could not process this request or response. Adjust the
   input and retry.`
+- Opening the in-app diagnostics modal while summarization was processing was
+  followed by repeated failures on later attempts using the same input. The
+  retained SDK detail was: `Couldn't generate a response. Try a different
+  input.`
 
 ## Interpretation
 
 - The background-interruption message is misleading because the input was
   valid before foreground loss. `TASK-28` owns correction and revalidation.
+- The retained SDK detail does not prove foreground loss or a poisoned client.
+  Repeating the same input can legitimately repeat a response-generation
+  failure. `TASK-29` owns controlled comparison using the same input, different
+  input, navigation away and back, and app relaunch.
 - Successful inference context is persisted but not inspectable through a
   secondary UI surface. `TASK-51` owns a diagnostics modal.
 - The home model card is the key platform signal and should appear before
@@ -32,8 +40,8 @@ are not a complete device matrix.
 ## Still Unknown
 
 - Whether every reported session ran on the attached Samsung `SM-F731B`.
-- The raw SDK exception detail emitted during the observed foreground-loss
-  interruption.
+- Whether the diagnostics modal affected inference or merely coincided with a
+  repeatable response-generation failure for that input.
 - Unsupported-device UX.
 - Offline-after-provisioning behavior.
 - Physical-device battery, thermal, and quota behavior.

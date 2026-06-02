@@ -9,10 +9,10 @@ Handle foreground loss.
 - Kept documented `BACKGROUND_USE_BLOCKED` code `30` as the precise
   foreground-loss category.
 - Reclassified generic request, response, and generation processing errors as
-  `PROCESSING_INTERRUPTED` rather than unsupported policy rejection.
-- Replaced input-blaming recovery guidance with foreground-first retry
-  guidance. Input adjustment is suggested only if failure repeats while the
-  app remains foregrounded.
+  neutral `PROCESSING_FAILED` outcomes rather than unsupported policy rejection
+  or inferred foreground interruption.
+- Added retry-once guidance. Different input is suggested only if the same
+  input fails repeatedly, and foreground-only execution remains explicit.
 - Removed the unsupported `POLICY_REJECTION` category.
 - Retained raw SDK technical detail in inference UI state and displayed it in
   the error card for physical-device evidence capture.
@@ -37,10 +37,10 @@ Handle foreground loss.
 
 ## Known Limitations
 
-- The raw SDK detail from the original foreground-loss observation was not
-  captured, so the app cannot claim that the generic processing code was
-  emitted specifically because of backgrounding.
-- Generic processing failures remain intentionally ambiguous.
+- A later same-input observation retained `Couldn't generate a response. Try a
+  different input.` The app cannot claim that a generic processing code was
+  emitted specifically because of backgrounding or modal opening.
+- Generic processing failures remain intentionally neutral.
 - Physical-device revalidation is deferred.
 
 ## Independent Review
