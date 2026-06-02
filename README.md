@@ -29,7 +29,8 @@ wrapper-demo feature checklist.
 - **On-Device Text Summarization:** Summarize long texts entirely on-device using Gemini Nano
 - **Automatic Model Download:** The app automatically downloads the Gemini Nano model when needed
 - **Download Progress Tracking:** Real-time progress updates during model download
-- **Offline Capability:** Once the model is downloaded, summarization works 100% offline
+- **Offline Experimentation:** Validate behavior after required AICore assets
+  have been provisioned
 - **Modern Android Architecture:** Clean Architecture with MVVM pattern
 - **Material 3 Design:** Modern UI built with Jetpack Compose and Material 3
 
@@ -175,7 +176,7 @@ The app follows Clean Architecture principles:
 3. App checks if model is downloaded
 4. If not downloaded, app prompts for download with progress tracking
 5. Once ready, text is sent to Gemini Nano for processing
-6. Summary appears on screen (100% on-device, no internet needed)
+6. Summary appears on screen through the on-device API path
 
 ### Model Download
 
@@ -201,9 +202,26 @@ The app uses Google's GenAI Summarization API which:
 ### Tips
 
 - **First Launch:** Model download can take several minutes depending on network speed
-- **Offline Use:** After initial download, no internet connection is needed
+- **Offline Use:** Treat offline-after-provisioning behavior as a validation
+  scenario, not an unconditional guarantee
 - **Text Length:** Longer texts may take a few seconds to process
-- **Privacy:** All processing happens on-device; no data leaves your phone
+- **Privacy:** Inference uses the on-device API path, but the current experiment
+  history also stores input and output text locally
+
+## Measurement Limitations
+
+The current metrics UI is an exploratory instrumentation scaffold, not a
+benchmark report.
+
+- **Latency:** Measures elapsed wall-clock time around a single API request. It
+  does not yet separate cold preparation, download wait, queueing, warm
+  inference, persistence, or user-perceived time.
+- **Tokens:** Uses a local word-and-punctuation heuristic. It is not the Gemini
+  Nano tokenizer.
+- **Memory:** Uses app-process JVM heap observations. The current peak field is
+  the runtime maximum heap limit, not an observed system or model-memory peak.
+- **Evidence boundary:** Do not generalize a single app-level observation across
+  devices, Gemini Nano versions, thermal states, or provisioning states.
 
 ## Building for Release
 
@@ -229,7 +247,7 @@ For signed releases, configure signing in `app/build.gradle.kts`.
 ### Model Download Fails
 
 - Ensure stable internet connection
-- Check available storage space (need ~2 GB free)
+- Check that the device has sufficient free storage for required AICore assets
 - Verify device compatibility
 - Check Google Play Services is updated
 
@@ -245,10 +263,13 @@ This is normal on unsupported devices. See [Device Compatibility](#device-compat
 
 ## Privacy & Security
 
-- **100% On-Device Processing:** Text never leaves your device
+- **On-Device API Path:** Inference requests use ML Kit GenAI APIs backed by
+  Android AICore
 - **No Analytics:** No user data collection or tracking
-- **No Network After Download:** Internet only needed for initial model download
-- **Local Storage:** Model stored in app's private storage
+- **Offline Boundary:** Offline-after-provisioning behavior requires explicit
+  real-device validation
+- **Local Experiment History:** The current metrics database stores input and
+  output text locally; privacy controls and backup policy remain planned work
 
 ## Contributing
 
