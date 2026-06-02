@@ -25,7 +25,11 @@ class InferenceUseCase @Inject constructor(
     private val memoryTracker: MemoryTracker,
     private val experimentContextProvider: ExperimentContextProvider
 ) {
-    operator fun invoke(capability: InferenceCapability, inputText: String): Flow<InferenceResult> =
+    operator fun invoke(
+        capability: InferenceCapability,
+        inputText: String,
+        fixtureId: String? = null
+    ): Flow<InferenceResult> =
         flow {
             try {
                 clientFactory.withClient(capability) { client ->
@@ -60,6 +64,7 @@ class InferenceUseCase @Inject constructor(
                         ExperimentContextInput(
                             baseModelName = baseModelName,
                             featureStatusBeforeRun = readiness,
+                            fixtureId = fixtureId,
                             heuristicInputSize = inputTokenCount,
                             outcomeCategory = "SUCCESS"
                         )

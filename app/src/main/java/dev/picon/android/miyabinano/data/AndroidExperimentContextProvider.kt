@@ -34,6 +34,7 @@ class AndroidExperimentContextProvider @Inject constructor(
             powerState = powerState(),
             thermalStatus = thermalStatus(),
             runSequence = runSequence.incrementAndGet(),
+            fixtureId = input.fixtureId,
             heuristicInputSize = input.heuristicInputSize,
             outcomeCategory = input.outcomeCategory
         )

@@ -139,7 +139,8 @@ class InferenceViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            inferenceUseCase(capability, inputText).collect { result ->
+            inferenceUseCase(capability, inputText, _uiState.value.selectedTestCase?.id)
+                .collect { result ->
                 when (result) {
                     is InferenceResult.Idle -> {
                         _uiState.update {
