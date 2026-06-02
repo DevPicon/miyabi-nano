@@ -20,8 +20,8 @@ already present on the device.
 | Hardware acceleration | AICore uses supported device hardware without requiring app-specific accelerator integration. |
 | Local processing | Input, inference, and output remain on-device through the feature API path, avoiding a required server round trip. |
 | Offline-capable experiences | Prepared capabilities can remain useful without reliable connectivity. This repository still validates offline-after-provisioning explicitly rather than claiming unconditional offline behavior. |
-| Lower per-request server cost | On-device inference avoids a hosted inference call for each feature request. |
-| Platform-managed safety boundary | AICore manages request processing, model weights, and safety mechanisms inside the OS-supported path. |
+| Lower hosted-inference dependency | On-device inference can avoid a hosted inference call for a supported feature request. The actual cost effect depends on the product architecture. |
+| Platform-managed execution boundary | AICore manages model access and request processing inside the OS-supported path. The app still owns surfaced failures, product policy, and user-facing recovery. |
 
 ## What The App Still Owns
 

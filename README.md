@@ -53,7 +53,7 @@ Start with the [documentation guide](docs/README.md). It introduces:
 - **UI Framework:** Jetpack Compose
 - **Design System:** Material 3
 - **Minimum SDK:** 34 (Android 14)
-- **Target SDK:** 36 (Android 15)
+- **Target SDK:** 36 (Android 16)
 - **Architecture:** Clean Architecture + MVVM
 - **Dependency Injection:** Hilt
 - **Navigation:** Navigation Compose
@@ -90,7 +90,7 @@ This table records repository observations, not a general support guarantee.
 
 | Date | Device identity | Android version | Repository observation |
 | --- | --- | --- | --- |
-| 2026-06-02 | `samsung SM-F731B` | Android 16 / API 36 | Device attached for future real-device validation. Capability-specific AICore status has not yet been recorded. |
+| 2026-06-02 | `samsung SM-F731B` | Android 16 / API 36 | Summarization, Proofreading, and Rewriting produced output after provisioning. A repeated Summarization-only generation failure recovered after uninstall and reinstall; the smallest effective recovery boundary remains under investigation. |
 
 ### Unsupported And Not-Yet-Ready Devices
 
@@ -155,7 +155,7 @@ miyabi-nano/
 │   │   │   │   ├── domain/                # Business logic & use cases
 │   │   │   │   ├── navigation/            # Navigation setup
 │   │   │   │   ├── ui/                    # UI layer
-│   │   │   │   │   ├── main/              # Main menu & model download
+│   │   │   │   │   ├── main/              # Main menu & model information
 │   │   │   │   │   ├── inference/         # Capability-specific experiments
 │   │   │   │   │   └── theme/             # App theme & styling
 │   │   │   │   ├── MainActivity.kt        # App entry point
@@ -179,7 +179,7 @@ The app follows Clean Architecture principles:
 1. **UI Layer (Compose):** Declarative UI with state hoisting
 2. **ViewModel Layer:** Manages UI state and business logic
 3. **Domain Layer:** Contains use cases (business rules)
-4. **Data Layer:** Wraps the Gemini Nano summarization API
+4. **Data Layer:** Wraps the configured ML Kit GenAI feature APIs
 
 ### Capability Flow
 
@@ -194,7 +194,7 @@ The app follows Clean Architecture principles:
 
 ### Model Download
 
-The app uses Google's GenAI Summarization API which:
+The app uses ML Kit GenAI feature APIs which:
 - Surfaces feature-download callbacks when configured assets are downloadable
 - Relies on Android AICore for system-managed Gemini Nano access
 - Provides download progress callbacks

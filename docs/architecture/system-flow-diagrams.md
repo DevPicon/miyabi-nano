@@ -14,17 +14,17 @@ flowchart LR
     subgraph OS["Android / AICore-owned"]
         READY["Capability readiness"]
         PROVISION["Asset provisioning"]
-        SAFETY["Request processing and safety"]
+        PROCESSING["Request processing"]
         MODEL["Gemini Nano model lifecycle"]
         ACCEL["Hardware acceleration"]
     end
 
     UX --> READY
-    ORCH --> SAFETY
+    ORCH --> PROCESSING
     DIAG --> READY
     READY --> PROVISION
     PROVISION --> MODEL
-    SAFETY --> MODEL
+    PROCESSING --> MODEL
     MODEL --> ACCEL
     PRIV -. "remains app responsibility" .-> DIAG
 ```
