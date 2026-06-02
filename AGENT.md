@@ -37,19 +37,27 @@ backlog.
 
 Every implementation task must follow this sequence:
 
-1. **Implement:** Complete only the scoped task. Do not batch unrelated work.
-2. **Verify:** Run relevant automated checks and required real-device scenarios.
+1. **Start state:** Update the task status in
+   `docs/miyabi-nano-implementation-plan.md` to `IN PROGRESS` before
+   implementation begins.
+2. **Implement:** Complete only the scoped task. Do not batch unrelated work.
+3. **Verify:** Run relevant automated checks and required real-device scenarios.
    Record what ran, what passed, and what could not run.
-3. **Commit:** Create one intentional commit for the task. Include the stable
+4. **Commit:** Create one intentional commit for the task. Include the stable
    task ID in the commit message.
-4. **Summarize:** Create a completion summary containing changed behavior,
+5. **Summarize:** Create a completion summary containing changed behavior,
    verification evidence, commit hash, known limitations, and unresolved risks.
-5. **Review:** After the summary exists, run the
+   Keep the task status `IN PROGRESS` while the independent review is pending.
+6. **Review:** After the summary exists, run the
    `android-task-independent-review` skill against the completed task, commit,
    summary, and relevant diff.
-6. **Resolve review outcome:** Record the independent-review verdict and
+7. **Resolve review outcome:** Record the independent-review verdict and
    findings in the completion summary. Keep the task open until required review
    follow-up is resolved.
+8. **Completion state:** After required fixes are resolved, update the task
+   status in `docs/miyabi-nano-implementation-plan.md` to `COMPLETE`.
+9. **Closure commit:** Commit the finalized completion summary and the
+   corresponding implementation-plan state update together.
 
 The completion summary must be stored under:
 
