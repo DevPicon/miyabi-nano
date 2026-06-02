@@ -7,6 +7,7 @@ conference material.
 | --- | --- |
 | Android AICore | The Android system service used by ML Kit GenAI APIs to access and execute supported Gemini Nano capabilities on-device. |
 | Base model | The system-managed Gemini Nano model available through AICore on a supported device. Different devices can expose different base-model versions. |
+| Base-model identity | The Gemini Nano name returned by `getBaseModelName()` after AICore can expose it for a suitable configured capability. Treat an unavailable identity as unknown evidence, not automatically as unsupported-device proof. |
 | Feature-specific asset | A downloadable asset required by a configured ML Kit GenAI capability. Do not imply that one summarizer download proves every capability is ready. |
 | Provisioning | The process of making required AICore and feature-specific assets available for a configured capability. Provisioning can require network access and can be interrupted or unavailable. |
 | Capability status | The runtime readiness state returned for a configured ML Kit GenAI feature, such as unavailable, downloadable, downloading, or available. |

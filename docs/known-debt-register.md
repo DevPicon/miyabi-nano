@@ -5,7 +5,7 @@ the behavior has been implemented, verified, or reviewed.
 
 | Gap | Why It Matters | Owning Task |
 | --- | --- | --- |
-| The main menu checks summarizer readiness while exposing five capabilities. | Users can enter proofreading or rewriting flows without capability-specific readiness evidence. | `TASK-12` |
+| The home screen exposes a per-capability download matrix rather than a concise bootstrap summary. | The UI overemphasizes manual downloads and obscures the distinction between shared Gemini Nano identity and capability-specific assets. | `TASK-46`, `TASK-47` |
 | The repository contains an older summarization flow and a newer generic inference flow. | Duplicate orchestration obscures lifecycle ownership and failure behavior. | `TASK-13` |
 | Inference entry points are not gated by per-capability readiness. | Unsupported or not-yet-ready devices can enter ambiguous failure states. | `TASK-14` |
 | AICore failures are reduced to generic messages. | Disk pressure, foreground blocking, quotas, busy service, policy rejection, and incompatibility are not teachable or recoverable states. | `TASK-15` |
@@ -17,3 +17,5 @@ the behavior has been implemented, verified, or reviewed.
 | Backup configuration remains a template while local experiment text is stored. | Sensitive experiment history may be eligible for implicit backup. | `TASK-38` |
 | Unit-test coverage is minimal and the instrumentation test remains generated placeholder evidence. | Lifecycle and Android-specific claims are not protected by realistic automation. | `TASK-17`, `TASK-30` |
 | Device-support evidence is incomplete. | An attached device identity is not proof of configured-feature readiness or behavior. | `TASK-30`, `TASK-39` |
+| Gemini Nano base-model identity is not surfaced or persisted. | Output variability across Nano versions cannot be explained or reproduced credibly without `getBaseModelName()` evidence. | `TASK-46`, `TASK-18`, `TASK-19` |
+| Image Description, Speech Recognition, and Prompt APIs are not represented. | These APIs are educationally relevant but have distinct maturity levels, inputs, and support matrices. Adding them prematurely would hide rather than teach platform constraints. | `TASK-48`, `TASK-49`, `TASK-50` |

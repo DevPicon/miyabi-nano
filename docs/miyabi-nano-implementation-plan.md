@@ -28,6 +28,7 @@ task `TASK-XX`.
 | Baseline | Phase 0A | Restore a verifiable baseline |
 | Documentation | Phase 0B | Correct the narrative and freeze feature growth |
 | Lifecycle | Phase 1 | Unify capability lifecycle and unsupported-device UX |
+| Capability expansion | Phase 1B | Add API families only after lifecycle credibility |
 | Experimentation | Phase 2 | Build a credible experiment harness |
 | Offline and interruption | Phase 3 | Prove offline-first and lifecycle behavior |
 | Sustained use | Phase 4 | Measure sustained-use boundaries |
@@ -52,7 +53,8 @@ remediation subtasks directly after their parent using suffixes such as
 | `TASK-09` | `COMPLETE` | `TASK-20` | `NOT STARTED` | `TASK-31` | `NOT STARTED` | `TASK-42` | `NOT STARTED` |
 | `TASK-10` | `COMPLETE` | `TASK-21` | `NOT STARTED` | `TASK-32` | `NOT STARTED` | `TASK-43` | `NOT STARTED` |
 | `TASK-11` | `COMPLETE` | `TASK-22` | `NOT STARTED` | `TASK-33` | `NOT STARTED` | `TASK-44` | `NOT STARTED` |
-| `TASK-45` | `COMPLETE` |  |  |  |  |  |  |
+| `TASK-45` | `COMPLETE` | `TASK-46` | `NOT STARTED` | `TASK-47` | `NOT STARTED` | `TASK-48` | `NOT STARTED` |
+| `TASK-49` | `NOT STARTED` | `TASK-50` | `NOT STARTED` |  |  |  |  |
 
 ## Phase 0A: Restore A Verifiable Baseline
 
@@ -107,6 +109,8 @@ must remain short and lead directly to lifecycle work.
 | `TASK-16` | Lifecycle | Define ML Kit resource ownership | Choose and implement an explicit lifecycle boundary for closing and recreating summarizer, proofreader, and rewriter clients. | `TASK-10`, `TASK-13` | Resource release is deterministic and documented; closed clients are not accidentally reused. |
 | `TASK-17` | Lifecycle | Test capability lifecycle | Add deterministic tests for readiness transitions, download callbacks, retry decisions, gating, failure mapping, and resource-ownership behavior. | `TASK-11`, `TASK-14`, `TASK-15`, `TASK-16` | Automated tests cover the capability lifecycle state machine and typed failures. |
 | `TASK-45` | Lifecycle | Handle observed AICore IPC disconnect during provisioning | Map an observed `1-DOWNLOAD_ERROR / 6-IPC_ERROR` service disconnect to a recoverable preparation failure. Show wait-and-retry guidance without labeling the device unsupported, retain the raw SDK detail for evidence, and keep the broader public error-code catalog in `TASK-15`. | `TASK-12` | Provisioning IPC disconnects produce a stable retry UX with a user-facing explanation and separate technical detail. |
+| `TASK-46` | Lifecycle | Retrieve Gemini Nano base-model identity | Call `getBaseModelName()` through the app-owned capability boundary after a suitable capability becomes ready. Model loading, unavailable identity, transient failure, and retrieved identity explicitly without assuming one name applies before AICore can expose it. | `TASK-10`, `TASK-45` | The app can display the retrieved Gemini Nano base-model name when available and can distinguish unknown identity from unsupported device state. |
+| `TASK-47` | Lifecycle | Simplify home bootstrap and support UX | Replace the per-capability download panel on the home screen with a concise device-support and Gemini Nano identity summary plus one initial setup action where required. Keep the experiment list as the primary navigation. Move capability-specific readiness checks, provisioning prompts, and fixture/input availability into each experiment flow. | `TASK-13`, `TASK-14`, `TASK-46` | The home screen explains whether on-device AI is ready without implying that one bootstrap download proves every capability asset is installed. Each experiment gates text entry, baked fixtures, and inference using its configured capability status. |
 
 **Phase acceptance:** Each visible capability reports its own readiness,
 unsupported configurations have a stable UX, downloadable and downloading states
@@ -117,13 +121,33 @@ cover the lifecycle state machine.
 close/recreate behavior. Capability adapters may share a base model while still
 provisioning independently.
 
+## Phase 1B: Add Capability Families Without Hiding Support Differences
+
+**Objective:** Expand the educational surface only after the shared lifecycle
+path is proven. Preserve separate API maturity levels, support matrices,
+provisioning behavior, inputs, and failure modes.
+
+| ID | Type | Task | Definition | Dependency | Task-level acceptance |
+| --- | --- | --- | --- | --- | --- |
+| `TASK-48` | Capability expansion | Add image-description experiment | Add the ML Kit GenAI Image Description Beta API as an image-input experiment. Reuse the app-owned readiness, provisioning, failure, model-identity, and resource-ownership boundaries without pretending that text-capability support proves image-description support. | `TASK-17`, `TASK-47` | Image description has capability-specific readiness UX, controlled image fixtures, and clearly labeled Beta status. |
+| `TASK-49` | Capability expansion | Add speech-recognition experiment | Add Speech Recognition as a separate experiment and distinguish Basic Mode from GenAI-backed Advanced Mode. Document Alpha maturity and do not treat broad Basic Mode device availability as proof that Advanced Mode is supported. | `TASK-17`, `TASK-47` | The experiment exposes its selected mode, runtime availability, controlled audio fixtures, and support boundary without conflating traditional and GenAI-backed recognition. |
+| `TASK-50` | Capability expansion | Add Prompt API experiment | Add the Prompt Beta API as a separately gated experiment. Expose the retrieved Nano model version, model-family support boundary, prompt fixture identity, and safety limitations. Do not route arbitrary prompts through feature-specific API assumptions. | `TASK-17`, `TASK-46`, `TASK-47` | Prompt experiments run only on a verified supported configuration and record whether the device exposes a compatible Nano model family. |
+
+**Phase acceptance:** New API families reuse lifecycle evidence where valid and
+remain separately gated where platform support differs. The repository explains
+why a working text feature-specific API does not prove Prompt API, Advanced
+Speech Recognition, or Image Description availability.
+
+**Risk:** Adding visible capabilities can create feature-checklist inflation.
+Do not start Phase 1B until `TASK-17` closes the shared lifecycle with tests.
+
 ## Phase 2: Build A Credible Experiment Harness
 
 **Objective:** Turn exploratory metrics into reproducible engineering evidence.
 
 | ID | Type | Task | Definition | Dependency | Task-level acceptance |
 | --- | --- | --- | --- | --- | --- |
-| `TASK-18` | Experimentation | Define versioned experiment schema | Define a schema containing app version, device manufacturer and model, Android build, API level, capability configuration, Gemini Nano base-model name where exposed, feature status before run, connectivity, power, thermal status, run sequence, cold/warm classification, fixture ID, heuristic input size, outcome category, and timing milestones. | `TASK-17` | Schema fields are documented, versioned, and mapped to persistence. |
+| `TASK-18` | Experimentation | Define versioned experiment schema | Define a schema containing app version, device manufacturer and model, Android build, API level, capability configuration, Gemini Nano base-model name where exposed, feature status before run, connectivity, power, thermal status, run sequence, cold/warm classification, fixture ID, heuristic input size, outcome category, and timing milestones. | `TASK-17`, `TASK-46` | Schema fields are documented, versioned, and mapped to persistence. |
 | `TASK-19` | Experimentation | Capture reproducibility context | Populate experiment records with device, model, configuration, and runtime context at execution time. | `TASK-18` | Two exports from different device contexts can be distinguished without external notes. |
 | `TASK-20` | Experimentation | Separate timing milestones | Capture preparation wait, download time, time to first visible output where applicable, inference completion, persistence time, and total user-perceived time. | `TASK-18`, `TASK-13` | Cold, warm, provisioning, and UI-perceived durations cannot be accidentally collapsed into one latency value. |
 | `TASK-21` | Experimentation | Correct process-memory reporting | Rename existing heap observations accurately or remove them from the UI until a defensible measurement exists. Do not present runtime maximum heap as observed peak memory. | `TASK-07` | Metrics UI contains no misleading peak-memory claim. |
@@ -206,14 +230,18 @@ what was observed, under which conditions, and what remains unknown.
 
 ## Immediate Next Task
 
-Implement `TASK-01` first, complete Phase 0A, then proceed through Phase 0B and
-Phase 1 in dependency order:
+Implement `TASK-13` next, then proceed through the remaining Phase 1 lifecycle
+tasks in dependency order. Retrieve base-model identity in `TASK-46`, simplify
+the bootstrap-oriented home UX in `TASK-47`, and expand API families only after
+the lifecycle test gate closes:
 
-> Restore a compiling, testable baseline. Then create a capability-specific
-> readiness and provisioning state machine, unify inference orchestration, map
-> typed AICore failures, and add unsupported-device UX with automated
-> state-transition tests.
+> Unify inference orchestration, gate every experiment by its configured
+> capability readiness, map typed AICore failures, define resource ownership,
+> retrieve Gemini Nano identity, and replace the home download matrix with an
+> honest bootstrap summary. Add Image Description, Speech Recognition, and
+> Prompt experiments only after the lifecycle path is verified.
 
 This is the highest-leverage next step because every later claim depends on
-knowing whether a capability is supported, provisioned, usable in the current
-lifecycle state, and failing for a reason the application can explain.
+knowing which Nano model was observed, whether a configured capability is
+supported, provisioned, usable in the current lifecycle state, and failing for
+a reason the application can explain.
