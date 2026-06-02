@@ -17,6 +17,16 @@ different engineering questions:
 The goal is evidence-backed educational material, not feature parity and not a
 wrapper-demo feature checklist.
 
+## Documentation
+
+Start with the [documentation guide](docs/README.md). It introduces:
+
+- [AICore and Gemini Nano basics](docs/concepts/aicore-and-gemini-nano-basics.md)
+- [OS-supported AI benefits and trade-offs](docs/concepts/os-supported-ai-benefits-and-tradeoffs.md)
+- [Architecture diagrams](docs/architecture/system-flow-diagrams.md)
+- [Platform responsibility model](docs/platform-responsibility-model.md)
+- [Known debt register](docs/known-debt-register.md)
+
 ## Screenshots
 
 <p align="center">
@@ -26,9 +36,12 @@ wrapper-demo feature checklist.
 
 ## Features
 
-- **On-Device Text Summarization:** Summarize long texts entirely on-device using Gemini Nano
-- **Automatic Model Download:** The app automatically downloads the Gemini Nano model when needed
-- **Download Progress Tracking:** Real-time progress updates during model download
+- **Feature-Specific Experiments:** Exercise Summarization, Proofreading, and
+  Rewriting through ML Kit GenAI APIs backed by AICore
+- **Capability-Aware Setup:** Check configured-feature readiness and expose
+  setup progress when required platform assets are downloadable
+- **Inspectable Diagnostics:** View Nano identity, readiness, device context,
+  failure detail, and the public SDK request boundary
 - **Offline Experimentation:** Validate behavior after required AICore assets
   have been provisioned
 - **Modern Android Architecture:** Clean Architecture with MVVM pattern
@@ -47,7 +60,7 @@ wrapper-demo feature checklist.
 - **Asynchronous:** Kotlin Coroutines & Flow
 - **Build System:** Gradle with Kotlin DSL
 - **Annotation Processing:** KSP (Kotlin Symbol Processing)
-- **ML Framework:** Google GenAI Summarization (Gemini Nano)
+- **ML Framework:** ML Kit GenAI APIs backed by Android AICore and Gemini Nano
 
 ## Prerequisites
 
@@ -81,11 +94,10 @@ This table records repository observations, not a general support guarantee.
 
 ### Unsupported And Not-Yet-Ready Devices
 
-The repository is working toward capability-specific unsupported-device UX.
-The current implementation checks summarizer status on the main screen, but it
-does not yet prove complete readiness handling for every visible capability.
-See the implementation plan for the lifecycle work required before broader
-claims are made.
+The app checks each configured capability before inference. Unsupported-device
+evidence remains incomplete across the broader official device matrix. See the
+[implementation plan](docs/miyabi-nano-implementation-plan.md) before making
+broader claims.
 
 ## Setup Instructions
 
@@ -127,9 +139,9 @@ Or use Android Studio's build menu: **Build → Make Project**
 1. Connect an Android device (API 34+) or start an emulator
 2. Click the **Run** button in Android Studio (or press `Shift + F10`)
 3. The app will:
-   - Check if Gemini Nano is available on your device
-   - Prompt to download the model if supported
-   - Display compatibility information if not supported
+   - Check bootstrap readiness and retrieve Nano identity where exposed
+   - Keep capability-specific setup inside each experiment
+   - Display diagnostics and recovery guidance for observable failures
 
 ## Project Structure
 
@@ -144,7 +156,7 @@ miyabi-nano/
 │   │   │   │   ├── navigation/            # Navigation setup
 │   │   │   │   ├── ui/                    # UI layer
 │   │   │   │   │   ├── main/              # Main menu & model download
-│   │   │   │   │   ├── summarize/         # Summarization feature
+│   │   │   │   │   ├── inference/         # Capability-specific experiments
 │   │   │   │   │   └── theme/             # App theme & styling
 │   │   │   │   ├── MainActivity.kt        # App entry point
 │   │   │   │   └── MiyabiNanoApplication.kt
@@ -169,14 +181,16 @@ The app follows Clean Architecture principles:
 3. **Domain Layer:** Contains use cases (business rules)
 4. **Data Layer:** Wraps the Gemini Nano summarization API
 
-### Text Summarization Flow
+### Capability Flow
 
-1. User enters text (min 100 characters, max 1000 words)
-2. User taps "Summarize" button
-3. App checks if model is downloaded
-4. If not downloaded, app prompts for download with progress tracking
-5. Once ready, text is sent to Gemini Nano for processing
-6. Summary appears on screen through the on-device API path
+1. The app checks the configured feature through `checkFeatureStatus()`.
+2. If required assets are missing, the experiment exposes setup and progress.
+3. When ready, the app creates a configured ML Kit client and prepares the
+   inference engine.
+4. The app submits the public feature-API request through AICore.
+5. The app closes the client and renders output or typed recovery guidance.
+6. Diagnostics retain the public request boundary and runtime context without
+   pretending to expose platform-managed internals.
 
 ### Model Download
 
@@ -188,16 +202,23 @@ The app uses Google's GenAI Summarization API which:
 
 ## Usage
 
-### Basic Text Summarization
+### Basic Experiment Flow
 
 1. Open the app
-2. If prompted, allow model download (one-time setup)
-3. Enter or paste text to summarize
-   - Minimum: 100 characters
-   - Maximum: 1000 words
-4. Tap "Summarize"
-5. Wait for on-device processing
-6. View the generated summary
+2. Complete bootstrap or capability-specific setup if prompted
+3. Choose an experiment
+4. Load baked data or enter compatible input
+5. Tap "Run Inference"
+6. Inspect output, exploratory metrics, and diagnostics
+
+### Summarization Input Notes
+
+- Article summarization requires more than 400 characters.
+- ML Kit reports best results with at least 300 words.
+- ML Kit limits summarization input to fewer than 4000 tokens, approximately
+  3000 English words.
+- A configured capability reporting `AVAILABLE` does not guarantee successful
+  output for every legal article or every transient AICore state.
 
 ### Tips
 
@@ -213,13 +234,13 @@ The app uses Google's GenAI Summarization API which:
 The current metrics UI is an exploratory instrumentation scaffold, not a
 benchmark report.
 
-- **Latency:** Measures elapsed wall-clock time around a single API request. It
-  does not yet separate cold preparation, download wait, queueing, warm
-  inference, persistence, or user-perceived time.
+- **Latency:** Records exploratory timing milestones including preparation,
+  completion, persistence, and user-perceived timing. Controlled cold/warm
+  protocols and statistical summaries remain future work.
 - **Tokens:** Uses a local word-and-punctuation heuristic. It is not the Gemini
   Nano tokenizer.
-- **Memory:** Uses app-process JVM heap observations. The current peak field is
-  the runtime maximum heap limit, not an observed system or model-memory peak.
+- **Memory:** Uses app-process JVM heap observations. These values are not
+  system-level or model-memory measurements.
 - **Evidence boundary:** Do not generalize a single app-level observation across
   devices, Gemini Nano versions, thermal states, or provisioning states.
 
@@ -275,7 +296,7 @@ This is normal on unsupported devices. See [Device Compatibility](#device-compat
 
 We welcome contributions! Here's how you can help:
 
-1. **Report Issues:** Found a bug or have a feature request? [Open an issue](../../issues/new)
+1. **Report Issues:** Found a bug or have a feature request? [Open an issue](https://github.com/DevPicon/miyabi-nano/issues/new)
 2. **Submit Pull Requests:**
    - Fork the repository
    - Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -316,13 +337,13 @@ SOFTWARE.
 ## Acknowledgments
 
 - Built with [Jetpack Compose](https://developer.android.com/jetpack/compose)
-- Uses [Google GenAI Summarization API](https://developer.android.com/ai/genai)
-- Powered by [Gemini Nano](https://deepmind.google/technologies/gemini/nano/)
+- Uses [ML Kit GenAI APIs](https://developers.google.com/ml-kit/genai)
+- Powered by [Gemini Nano through Android AICore](https://developer.android.com/ai/gemini-nano)
 
 ## Additional Resources
 
 - [Miyabi Nano Platform Glossary](docs/platform-glossary.md)
 - [Google AI on Android Documentation](https://developer.android.com/ai)
 - [Jetpack Compose Documentation](https://developer.android.com/jetpack/compose/documentation)
-- [Gemini Nano Overview](https://ai.google.dev/gemini-api/docs/models/gemini#gemini-nano)
+- [Gemini Nano on Android](https://developer.android.com/ai/gemini-nano)
 - [Android Architecture Guide](https://developer.android.com/topic/architecture)
