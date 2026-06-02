@@ -1,173 +1,16 @@
-# Miyabi Nano: Android OS-Supported On-Device AI Implementation Plan
+# Miyabi Nano Implementation Plan
 
-## 1. Portfolio Position
+## Related Documents
 
-`miyabi-nano` is the Android lane for studying OS-supported on-device AI. It is not
-an Android port of `iki-nano`, and parity with an iOS self-managed runtime is not
-the goal.
+- [Portfolio positioning](portfolio-positioning.md)
+- [Repository evaluation](repository-evaluation.md)
+- [Platform responsibility model](platform-responsibility-model.md)
+- [Evidence priorities](evidence-priorities.md)
+- [Verification strategy](verification-strategy.md)
+- [Technical content strategy](content-strategy.md)
+- [Agent governance](../AGENT.md)
 
-The core question is:
-
-> What changes when the platform vendor supplies the model execution path through
-> Android AICore and ML Kit GenAI APIs, while the application still owns
-> capability detection, provisioning UX, lifecycle behavior, failure handling,
-> measurement, and product boundaries?
-
-The repository should become an evidence-backed engineering case study, not a
-feature catalog and not a wrapper demo.
-
-## 2. Executive Assessment
-
-### Current scores
-
-| Dimension | Score | Assessment |
-| --- | ---: | --- |
-| Strategic alignment | 5/10 | The repository uses the correct Android-native path, but its narrative still reads like a summarization demo rather than an OS-supported AI engineering study. |
-| Technical credibility | 2/10 | There is real ML Kit integration and an initial measurement scaffold, but the current branch does not compile and the repository lacks real-device evidence, lifecycle rigor, benchmark methodology, failure taxonomy, and meaningful tests. |
-
-### Bottom line
-
-The project has a credible seed: it integrates ML Kit GenAI summarization,
-proofreading, and rewriting clients backed by Gemini Nano, checks summarizer
-availability on launch, exposes model-download progress, persists inference
-records with Room, and includes reusable test inputs.
-
-It is not yet conference-ready. The current visible experience overstates what
-has been proven. The app displays five capability entry points, but the main
-download/status surface checks only the summarizer. The generic inference path
-calls clients directly without capability-specific preparation. The README makes
-strong offline and privacy claims without a reproducible validation protocol.
-The metrics card presents rough timings and process-heap deltas as performance
-evidence without benchmark controls.
-
-Baseline verification also fails at `:app:compileDebugKotlin`. The generic
-inference path uses incompatible await/result handling for the ML Kit client
-return types, and `InferenceViewModel` is missing the `TestCase` model import.
-Restoring a compiling baseline is the first implementation prerequisite.
-
-The highest-value work is not adding more GenAI APIs. It is making the platform
-constraints observable, testable, and teachable.
-
-## 3. Repository Evidence
-
-### What is technically serious
-
-- `GenAiModule` creates real ML Kit GenAI clients for summarization,
-  proofreading, and three rewriting configurations. This is the correct
-  high-level Android OS-supported lane.
-- `ModelDownloadViewModel` maps `FeatureStatus` values and exposes provisioning
-  progress for the summarizer.
-- `InferenceUseCase` routes five capability variants and emits initial latency,
-  token-estimate, character-count, and process-memory observations.
-- Room persistence provides a foundation for experiment history instead of
-  screenshot-only demonstrations.
-- `TestDataRepository` supplies reusable input fixtures, which is the beginning
-  of repeatable experiments.
-
-### What is superficial or misleading
-
-- The current `main` branch does not compile. Multi-capability work was committed
-  without a successful baseline build.
-- The main screen presents five capabilities as equally ready, while model
-  status and download lifecycle are checked only through the summarizer.
-- The active generic inference path does not call `checkFeatureStatus()` before
-  inference and does not explain adapter downloads, transient provisioning, or
-  unsupported configurations.
-- The old summarization flow and the new generic flow coexist. The old flow is
-  still wired in navigation but is no longer reachable from the visible main
-  menu. Keeping both flows makes lifecycle ownership and closure behavior harder
-  to reason about.
-- `InferenceUseCase` measures elapsed wall-clock time around one request and
-  labels it inference latency. It does not distinguish cold preparation, warm
-  inference, queueing, download wait, or UI-perceived time.
-- `MemoryTracker.getPeakMemoryMB()` returns the runtime maximum heap limit, not
-  observed peak memory. The metrics UI therefore risks teaching an incorrect
-  interpretation.
-- Token counts are heuristic estimates. They may be useful for grouping inputs,
-  but they are not model tokenizer results and must be labeled accordingly.
-- Raw input and generated output are persisted to Room. That weakens the privacy
-  story unless the app clearly treats storage as an opt-in experiment mode,
-  provides deletion controls, and excludes records from backup.
-- Backup is enabled while backup-rule files remain template placeholders. A
-  privacy-preserving demo should not leave local experiment text eligible for
-  implicit cloud backup.
-- The README is stale and overconfident. It describes summarization-only
-  architecture, claims automatic download handling and graceful unsupported
-  behavior more broadly than the active flow proves, contains a December 2024
-  device list, and uses absolute phrases such as `100% offline`.
-- Unit and instrumentation tests are generated placeholders. They provide no
-  evidence for state transitions, lifecycle interruption, persistence, or
-  unsupported-device behavior.
-
-## 4. Narrative Support Matrix
-
-| Narrative claim | Current support | Evidence gap |
-| --- | --- | --- |
-| Android with OS-supported AI | Partial | The integration uses ML Kit GenAI APIs, but the docs do not clearly explain the AICore boundary or what Android owns versus what the app owns. |
-| Practical Gemini Nano / AICore experimentation | Partial | Real clients exist, but experiments are not versioned, exported, or reproducible. The app does not capture device, OS, app, API, or base-model context. |
-| Device support reality | Weak | Only summarizer status is shown. No capability matrix, device fingerprint, AICore compatibility explanation, unlocked-bootloader caveat, or unsupported-device evidence exists. |
-| Latency and UX implications | Weak | A single elapsed time is recorded. There is no cold/warm methodology, streaming comparison, distribution reporting, or user-perceived timing. |
-| Battery and thermal implications | Missing | No battery, thermal, sustained-run, or quota experiment exists. |
-| Offline behavior after provisioning | Claimed, not demonstrated | No explicit offline validation workflow or evidence artifact exists. |
-| Platform constraints and failure modes | Weak | Exceptions are reduced to generic messages. There is no handling matrix for AICore incompatibility, disk pressure, quotas, background blocking, cancellation, policy rejection, or transient unavailability. |
-| Offline-first UX | Weak | The UI exposes a download button, but does not model provisioning prerequisites, interrupted downloads, retry semantics, or per-capability readiness. |
-| Privacy-preserving AI | Weak | Inference is on-device, but raw experiment text is persisted and backup remains enabled without exclusions. |
-
-## 5. Platform Reality To Teach
-
-The implementation and educational content must distinguish vendor-provided
-runtime behavior from application responsibilities.
-
-### Android / AICore responsibilities
-
-- Execute supported Gemini Nano inference on-device.
-- Share the system-managed base model across applications where available.
-- Apply device- and model-version-dependent constraints.
-- Enforce foreground-only inference and per-app quotas.
-- Surface feature readiness and download lifecycle through ML Kit.
-
-### Application responsibilities
-
-- Check each configured capability at runtime.
-- Explain unsupported, downloadable, downloading, and available states.
-- Provide honest provisioning and offline UX.
-- Handle typed failures and retries without promising guaranteed availability.
-- Cancel or reconcile work when the app loses foreground eligibility.
-- Measure cold and warm behavior with enough context to reproduce results.
-- Minimize, disclose, and control storage of user text.
-- Document realistic use-case boundaries rather than implying general-purpose
-  local LLM capability.
-
-Official references:
-
-- [ML Kit GenAI API overview](https://developers.google.com/ml-kit/genai)
-- [Gemini Nano in Android AICore](https://developer.android.com/ai/aicore)
-- [Summarization API](https://developers.google.com/ml-kit/genai/summarization/android)
-- [Proofreading API](https://developers.google.com/ml-kit/genai/proofreading/android)
-- [Rewriting API](https://developers.google.com/ml-kit/genai/rewriting/android)
-- [GenAI error codes](https://developers.google.com/android/reference/com/google/mlkit/genai/common/GenAiException.ErrorCode)
-
-## 6. Highest-Leverage Missing Demonstrations
-
-Priority order matters. These demonstrations should be implemented before adding
-new capabilities.
-
-| Priority | Demonstration | Why it matters |
-| ---: | --- | --- |
-| 1 | Capability-specific availability and provisioning matrix | The central engineering problem is device reality, not API invocation. |
-| 2 | Unsupported-device and not-yet-ready UX | A conference demo must show the honest failure path, not only the happy path on one flagship phone. |
-| 3 | Cold, warm, and repeated-run latency methodology | A single timer is not benchmark evidence. |
-| 4 | Offline-after-provisioning experiment | Offline-first is a core claim and needs a reproducible proof protocol. |
-| 5 | Foreground loss, cancellation, rotation, and process-recreation behavior | AICore inference is foreground-only; lifecycle handling is a first-class platform constraint. |
-| 6 | Typed failure-mode explorer | The platform exposes meaningful error codes that should become teachable UX states. |
-| 7 | Sustained-run battery, thermal, and quota experiment | Android explicitly exposes a battery-use quota failure. This is a stronger story than speculative power claims. |
-| 8 | Experiment export with device and model metadata | Conference material requires evidence that can be compared and reviewed. |
-| 9 | Privacy-mode storage policy | Local inference is not enough if raw text is silently persisted or backed up. |
-| 10 | Realistic use-case boundary document | The strongest conclusion may be where OS-supported AI should not be used. |
-
-## 7. Implementation Plan
-
-### Task numbering and execution order
+## Task Numbering And Execution Order
 
 Task IDs are stable references for commits, reviews, and completion summaries.
 Tasks must be executed in the listed phase order unless a documented dependency
@@ -188,7 +31,7 @@ task `TASK-XX`.
 | Sustained use | Phase 4 | Measure sustained-use boundaries |
 | Content | Phase 5 | Package privacy, education, and conference evidence |
 
-### Task status register
+## Task Status Register
 
 Update this register when a task starts, becomes blocked, or completes. Add S0
 remediation subtasks directly after their parent using suffixes such as
@@ -208,7 +51,7 @@ remediation subtasks directly after their parent using suffixes such as
 | `TASK-10` | `NOT STARTED` | `TASK-21` | `NOT STARTED` | `TASK-32` | `NOT STARTED` | `TASK-43` | `NOT STARTED` |
 | `TASK-11` | `NOT STARTED` | `TASK-22` | `NOT STARTED` | `TASK-33` | `NOT STARTED` | `TASK-44` | `NOT STARTED` |
 
-### Phase 0A: Restore a verifiable baseline
+## Phase 0A: Restore A Verifiable Baseline
 
 **Objective:** Make the current repository buildable before architectural work
 continues.
@@ -224,12 +67,10 @@ continues.
 automated test, and a completion summary that records the original failures and
 the exact verification tasks run after the repair.
 
-**Risks**
+**Risk:** A compile fix alone can conceal deeper lifecycle problems. Do not
+expand the feature surface while restoring baseline health.
 
-- A compile fix alone can conceal deeper lifecycle problems. Do not expand the
-  feature surface while restoring baseline health.
-
-### Phase 0B: Correct the narrative and freeze feature growth
+## Phase 0B: Correct The Narrative And Freeze Feature Growth
 
 **Objective:** Establish an accurate scope before implementation expands.
 
@@ -245,12 +86,10 @@ the exact verification tasks run after the repair.
 reference, or a dated real-device observation. No absolute offline, privacy,
 device-support, or performance claims remain without a stated boundary.
 
-**Risks**
+**Risk:** Documentation can become a substitute for implementation. Phase 0B
+must remain short and lead directly to lifecycle work.
 
-- Documentation can become a substitute for implementation. Phase 0B must remain
-  short and must lead directly to lifecycle work.
-
-### Phase 1: Unify capability lifecycle and unsupported-device UX
+## Phase 1: Unify Capability Lifecycle And Unsupported-Device UX
 
 **Objective:** Make platform readiness observable for every exposed capability.
 
@@ -270,14 +109,11 @@ unsupported configurations have a stable UX, downloadable and downloading states
 are recoverable, one inference orchestration path remains, and automated tests
 cover the lifecycle state machine.
 
-**Risks**
+**Risks:** Singleton ML Kit clients simplify injection but complicate
+close/recreate behavior. Capability adapters may share a base model while still
+provisioning independently.
 
-- Singleton ML Kit clients simplify injection but complicate close/recreate
-  behavior. Define ownership before refactoring.
-- Capability adapters may share a base model while still provisioning
-  independently. The UI must not oversimplify this distinction.
-
-### Phase 2: Build a credible experiment harness
+## Phase 2: Build A Credible Experiment Harness
 
 **Objective:** Turn exploratory metrics into reproducible engineering evidence.
 
@@ -295,12 +131,10 @@ cover the lifecycle state machine.
 protocol and exported record. Observations remain distinct from benchmark
 summaries, and cold and warm runs cannot be combined accidentally.
 
-**Risks**
+**Risk:** App-level measurements cannot prove system-level energy or memory
+behavior. Label them accurately and supplement them with Android tooling.
 
-- App-level measurements cannot prove system-level energy or memory behavior.
-  Label them accurately and supplement them with Android tooling in Phase 4.
-
-### Phase 3: Prove offline-first and lifecycle behavior
+## Phase 3: Prove Offline-First And Lifecycle Behavior
 
 **Objective:** Demonstrate the user experience under real mobile interruptions.
 
@@ -317,13 +151,11 @@ summaries, and cold and warm runs cannot be combined accidentally.
 evidence, not inferred from documentation. Navigation, background loss,
 cancellation, and configuration changes never leave a stuck processing state.
 
-**Risks**
+**Risk:** Some provisioning and AICore behaviors are external-state dependent
+and cannot be deterministic in instrumentation. Keep a manual real-device
+matrix with evidence artifacts.
 
-- Some provisioning and AICore behaviors are external-state dependent and
-  cannot be made deterministic in instrumentation. Keep a manual real-device
-  matrix with evidence artifacts.
-
-### Phase 4: Measure sustained-use boundaries
+## Phase 4: Measure Sustained-Use Boundaries
 
 **Objective:** Produce defensible conclusions about latency, battery, thermal,
 and quotas.
@@ -342,14 +174,10 @@ counts, and raw artifacts. Battery and thermal conclusions are scoped to
 observed devices and protocols. The repository documents when OS-supported AI
 becomes a poor UX choice.
 
-**Risks**
+**Risks:** Battery experiments are noisy. Quota experiments may be difficult to
+reproduce. Report uncertainty honestly.
 
-- Battery experiments are noisy. Do not publish precision the protocol cannot
-  support.
-- Quota experiments may be difficult to reproduce. Report absence of evidence
-  honestly rather than manufacturing certainty.
-
-### Phase 5: Privacy, education, and conference package
+## Phase 5: Privacy, Education, And Conference Package
 
 **Objective:** Convert engineering evidence into reusable, non-hyped material.
 
@@ -369,67 +197,10 @@ code, test output, official documentation, or a dated experiment artifact.
 Privacy claims cover persistence and backup, not only network transport.
 Educational docs include negative results and decision boundaries.
 
-**Risks**
+**Risk:** Content can drift into product marketing. Every statement should state
+what was observed, under which conditions, and what remains unknown.
 
-- The content can drift into product marketing. Every statement should answer:
-  what was observed, under which conditions, and what remains unknown?
-
-## 8. Verification Matrix
-
-| Area | Automated verification | Real-device verification | Evidence artifact |
-| --- | --- | --- | --- |
-| Capability readiness | Unit tests for state machine | Supported and unsupported device runs | Capability matrix export and screenshots |
-| Provisioning | Unit tests for callbacks and retries | Fresh or reset provisioning, interrupted network | Provisioning timeline export |
-| Offline behavior | Instrumented UI checks where deterministic | Airplane-mode protocol after provisioning | Offline validation report |
-| Latency | Schema and calculation tests | Controlled cold/warm repetitions | JSON/CSV exports and benchmark summary |
-| Lifecycle | ViewModel and UI tests | Rotation, background, navigation, relaunch | Lifecycle scenario report |
-| Failures | Error-code mapping tests | Trigger feasible platform failures | Failure-mode catalog |
-| Battery and thermal | Calculation tests | Sustained-run protocol with Android tooling | Raw captures and scoped report |
-| Privacy | Backup-rule and repository tests | Delete/export behavior | Privacy checklist |
-
-## 9. Governance Rules
-
-`AGENT.md` is the repository governance source of truth. If this section and
-`AGENT.md` diverge, follow `AGENT.md` and update this summary.
-
-Every implementation task follows this closure sequence:
-
-1. Implement the scoped task.
-2. Verify automated checks and required real-device scenarios.
-3. Commit the task with its stable `TASK-XX` ID.
-4. Generate `docs/task-completion-summaries/TASK-XX.md`.
-5. Run the `android-task-independent-review` skill after the summary exists.
-6. Record the review result and resolve required follow-up before marking the
-   task complete.
-
-If the review reports an `S0`, keep the parent task open and append remediation
-subtasks to this plan using the parent ID plus alphabetical suffixes:
-`TASK-XXA`, `TASK-XXB`, `TASK-XXC`, `TASK-XXD`, and so on. Each remediation
-subtask must include its own definition, type, dependency, acceptance criteria,
-status, commit, summary, and independent review.
-
-Track every task as `NOT STARTED`, `IN PROGRESS`, `BLOCKED`, or `COMPLETE`.
-
-## 10. Content Anti-Patterns To Avoid
-
-- **Feature checklist inflation:** Adding prompt API, image description, or more
-  rewrite styles before lifecycle evidence exists.
-- **API-wrapper tutorial framing:** Showing only client construction and one
-  successful inference call.
-- **Flagship-device theater:** Demonstrating one prepared phone and implying
-  Android-wide availability.
-- **Absolute privacy claims:** Ignoring local history persistence, backups,
-  screenshots, logs, and exports.
-- **Benchmark cosplay:** Publishing one latency value, heap delta, or battery
-  screenshot as a general conclusion.
-- **Runtime parity framing:** Comparing Android and iOS by feature count instead
-  of comparing vendor-managed and app-managed responsibilities.
-- **Happy-path-only content:** Omitting provisioning delays, disk pressure,
-  foreground restrictions, quotas, model variation, and transient AICore state.
-- **Hype vocabulary:** Calling a beta integration production-ready, seamless, or
-  universal without evidence.
-
-## 11. Immediate Next Task
+## Immediate Next Task
 
 Implement `TASK-01` first, complete Phase 0A, then proceed through Phase 0B and
 Phase 1 in dependency order:
