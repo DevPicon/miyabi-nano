@@ -162,9 +162,6 @@ class InferenceViewModel @Inject constructor(
                         }
                     }
                     is InferenceResult.Success -> {
-                        // Save metrics to database
-                        metricsRepository.saveMetrics(result.metrics)
-
                         _uiState.update {
                             it.copy(
                                 isProcessing = false,
@@ -173,6 +170,9 @@ class InferenceViewModel @Inject constructor(
                                 error = null
                             )
                         }
+
+                        val persistedMetrics = metricsRepository.saveMetrics(result.metrics)
+                        _uiState.update { it.copy(metrics = persistedMetrics) }
                     }
                     is InferenceResult.Blocked -> {
                         _uiState.update {

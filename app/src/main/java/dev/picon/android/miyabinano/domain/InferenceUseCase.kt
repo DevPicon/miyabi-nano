@@ -8,6 +8,7 @@ import dev.picon.android.miyabinano.domain.genai.withClient
 import dev.picon.android.miyabinano.domain.model.InferenceCapability
 import dev.picon.android.miyabinano.domain.model.InferenceMetrics
 import dev.picon.android.miyabinano.domain.model.InferenceResult
+import dev.picon.android.miyabinano.domain.model.TimingMilestones
 import dev.picon.android.miyabinano.domain.model.ExperimentContextInput
 import dev.picon.android.miyabinano.domain.model.ExperimentContextProvider
 import dev.picon.android.miyabinano.domain.util.MemoryTracker
@@ -28,6 +29,7 @@ class InferenceUseCase @Inject constructor(
         flow {
             try {
                 clientFactory.withClient(capability) { client ->
+                    val requestStartNanos = System.nanoTime()
                     val readiness = client.checkReadiness()
                     when (val access = readiness.toInferenceAccess()) {
                         CapabilityInferenceAccess.Allowed -> Unit
@@ -44,7 +46,6 @@ class InferenceUseCase @Inject constructor(
 
                     emit(InferenceResult.Loading)
 
-                    val totalStartTime = System.currentTimeMillis()
                     val startMemory = memoryTracker.getCurrentMemoryUsageMB()
 
                     val inputTokenCount = TokenCounter.estimateTokens(inputText)
@@ -64,18 +65,20 @@ class InferenceUseCase @Inject constructor(
                         )
                     )
 
+                    val preparationStartNanos = System.nanoTime()
                     client.prepareInferenceEngine()
-                    val outputText = client.runInference(inputText)
+                    val preparationWaitMs = elapsedMs(preparationStartNanos)
 
-                    val totalEndTime = System.currentTimeMillis()
+                    val inferenceStartNanos = System.nanoTime()
+                    val outputText = client.runInference(inputText)
+                    val inferenceTimeMs = elapsedMs(inferenceStartNanos)
+                    val completionMs = elapsedMs(requestStartNanos)
+
                     val endMemory = memoryTracker.getCurrentMemoryUsageMB()
                     val runtimeMaxHeap = memoryTracker.getRuntimeMaxHeapMB()
 
                     val outputTokenCount = TokenCounter.estimateTokens(outputText)
                     val outputCharCount = outputText.length
-
-                    val totalTimeMs = totalEndTime - totalStartTime
-                    val inferenceTimeMs = totalTimeMs
 
                     val metrics = InferenceMetrics(
                         capability = capability,
@@ -85,12 +88,18 @@ class InferenceUseCase @Inject constructor(
                         outputText = outputText,
                         outputTokenCount = outputTokenCount,
                         outputCharCount = outputCharCount,
-                        modelLoadTimeMs = null,
+                        modelLoadTimeMs = preparationWaitMs,
                         inferenceTimeMs = inferenceTimeMs,
-                        totalTimeMs = totalTimeMs,
+                        totalTimeMs = completionMs,
                         processHeapDeltaMB = endMemory - startMemory,
                         runtimeMaxHeapMB = runtimeMaxHeap,
-                        experimentContext = experimentContext
+                        experimentContext = experimentContext,
+                        timingMilestones = TimingMilestones(
+                            preparationWaitMs = preparationWaitMs,
+                            firstVisibleOutputMs = completionMs,
+                            inferenceCompletionMs = completionMs,
+                            userPerceivedTotalMs = completionMs
+                        )
                     )
 
                     emit(InferenceResult.Success(outputText, metrics))
@@ -100,4 +109,7 @@ class InferenceUseCase @Inject constructor(
                 emit(InferenceResult.Error(e.toCapabilityPreparationFailure()))
             }
         }
+
+    private fun elapsedMs(startNanos: Long): Long =
+        (System.nanoTime() - startNanos) / 1_000_000
 }

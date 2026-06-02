@@ -24,8 +24,19 @@ class MetricsRepository @Inject constructor(
     suspend fun getMetricsById(id: String): InferenceMetrics? =
         metricsDao.getMetricsById(id)?.toDomain()
 
-    suspend fun saveMetrics(metrics: InferenceMetrics) {
+    suspend fun saveMetrics(metrics: InferenceMetrics): InferenceMetrics {
+        val startNanos = System.nanoTime()
         metricsDao.insertMetrics(metrics.toEntity())
+        val persistenceMs = (System.nanoTime() - startNanos) / 1_000_000
+        val updatedMetrics = metrics.copy(
+            timingMilestones = metrics.timingMilestones.copy(
+                persistenceMs = persistenceMs,
+                userPerceivedTotalMs = metrics.timingMilestones.userPerceivedTotalMs
+                    ?: metrics.totalTimeMs
+            )
+        )
+        metricsDao.insertMetrics(updatedMetrics.toEntity())
+        return updatedMetrics
     }
 
     suspend fun deleteMetricsById(id: String) {
