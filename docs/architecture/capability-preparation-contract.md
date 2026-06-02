@@ -34,6 +34,17 @@ capability:
 These configurations share an application contract but do not imply shared
 readiness. Each configured client must report its own runtime state.
 
+## Readiness State Machine
+
+| State | Entry Condition | UI Meaning | Allowed Actions |
+| --- | --- | --- | --- |
+| Checking | A readiness check is in progress. | Readiness is not known yet. | None |
+| Unavailable | The configured feature reports unavailable. | The capability cannot currently be used. | Check status |
+| Downloadable | Required feature assets can be provisioned. | The capability is supported but not ready. | Check status, start provisioning |
+| Downloading | Provisioning has started or the configured feature reports downloading. | Required assets are being prepared. | None |
+| Available | The configured feature reports available or provisioning completes. | Inference can be requested. | Check status, run inference |
+| Failed | A transient operation or unknown-status failure occurs. | The last preparation attempt failed. | Retry |
+
 ## Follow-Up Boundaries
 
 - `TASK-11` owns the per-capability readiness state machine.
