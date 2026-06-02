@@ -131,7 +131,7 @@ class InferenceViewModel @Inject constructor(
                         _uiState.update {
                             it.copy(
                                 isProcessing = false,
-                                error = result.message,
+                                error = "${result.failure.userMessage} ${result.failure.recoveryGuidance}",
                                 blockingReason = null,
                                 recoveryGuidance = null
                             )

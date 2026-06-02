@@ -1,5 +1,7 @@
 package dev.picon.android.miyabinano.domain.model
 
+import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationFailure
+
 sealed interface InferenceResult {
     data object Idle : InferenceResult
     data object Loading : InferenceResult
@@ -11,5 +13,5 @@ sealed interface InferenceResult {
         val message: String,
         val recoveryGuidance: String
     ) : InferenceResult
-    data class Error(val message: String) : InferenceResult
+    data class Error(val failure: CapabilityPreparationFailure) : InferenceResult
 }

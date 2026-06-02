@@ -3,6 +3,7 @@ package dev.picon.android.miyabinano.domain
 import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationClient
 import dev.picon.android.miyabinano.domain.genai.CapabilityInferenceAccess
 import dev.picon.android.miyabinano.domain.genai.toInferenceAccess
+import dev.picon.android.miyabinano.domain.genai.toCapabilityPreparationFailure
 import dev.picon.android.miyabinano.domain.model.InferenceCapability
 import dev.picon.android.miyabinano.domain.model.InferenceMetrics
 import dev.picon.android.miyabinano.domain.model.InferenceResult
@@ -78,7 +79,7 @@ class InferenceUseCase @Inject constructor(
             emit(InferenceResult.Success(outputText, metrics))
         } catch (e: Exception) {
             if (e is CancellationException) throw e
-            emit(InferenceResult.Error(e.message ?: "Unknown error occurred"))
+            emit(InferenceResult.Error(e.toCapabilityPreparationFailure()))
         }
     }
 }

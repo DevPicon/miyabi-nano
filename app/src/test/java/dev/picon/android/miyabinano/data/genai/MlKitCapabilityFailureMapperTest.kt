@@ -1,5 +1,6 @@
 package dev.picon.android.miyabinano.data.genai
 
+import com.google.mlkit.genai.common.GenAiException
 import dev.picon.android.miyabinano.domain.genai.CapabilityPreparationFailure
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -37,4 +38,40 @@ class MlKitCapabilityFailureMapperTest {
         )
         assertEquals(rawMessage, failure.technicalDetail)
     }
+
+    @Test
+    fun diskPressure_isMappedFromPublicErrorCode() {
+        val failure = MlKitCapabilityFailureMapper.map(
+            genAiException(GenAiException.ErrorCode.NOT_ENOUGH_DISK_SPACE)
+        )
+
+        assertEquals(CapabilityPreparationFailure.Category.DISK_PRESSURE, failure.category)
+        assertTrue("storage" in failure.userMessage.lowercase())
+    }
+
+    @Test
+    fun backgroundBlocking_isForwardCompatibleWithDocumentedErrorCode() {
+        val failure = MlKitCapabilityFailureMapper.map(genAiException(30))
+
+        assertEquals(
+            CapabilityPreparationFailure.Category.BACKGROUND_USE_BLOCKED,
+            failure.category
+        )
+        assertTrue("foreground" in failure.userMessage.lowercase())
+    }
+
+    @Test
+    fun policyFailures_shareAStableExperimentCategory() {
+        val failure = MlKitCapabilityFailureMapper.map(
+            genAiException(GenAiException.ErrorCode.RESPONSE_PROCESSING_ERROR)
+        )
+
+        assertEquals(
+            CapabilityPreparationFailure.Category.POLICY_REJECTION,
+            failure.category
+        )
+    }
+
+    private fun genAiException(errorCode: Int): GenAiException =
+        GenAiException("Synthetic GenAI failure", IllegalStateException(), errorCode)
 }

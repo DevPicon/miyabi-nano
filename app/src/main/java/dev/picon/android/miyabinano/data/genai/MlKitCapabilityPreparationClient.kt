@@ -20,7 +20,7 @@ class MlKitCapabilityPreparationClient(
     private val closeClient: () -> Unit
 ) : CapabilityPreparationClient {
     override suspend fun checkReadiness(): CapabilityReadiness =
-        when (checkFeatureStatus()) {
+        when (mapFailures { checkFeatureStatus() }) {
             FeatureStatus.UNAVAILABLE -> CapabilityReadiness.UNAVAILABLE
             FeatureStatus.DOWNLOADABLE -> CapabilityReadiness.DOWNLOADABLE
             FeatureStatus.DOWNLOADING -> CapabilityReadiness.DOWNLOADING
@@ -30,7 +30,8 @@ class MlKitCapabilityPreparationClient(
 
     override suspend fun provision(onEvent: (CapabilityProvisioningEvent) -> Unit) {
         try {
-            downloadFeature(
+            mapFailures {
+                downloadFeature(
                 object : DownloadCallback {
                 override fun onDownloadStarted(bytesToDownload: Long) {
                     onEvent(CapabilityProvisioningEvent.Started(bytesToDownload))
@@ -49,21 +50,31 @@ class MlKitCapabilityPreparationClient(
                     }
                 }
             )
-        } catch (e: Exception) {
-            if (e is CancellationException) throw e
-            throw CapabilityPreparationException(MlKitCapabilityFailureMapper.map(e), e)
+            }
+        } catch (e: CapabilityPreparationException) {
+            throw e
         }
     }
 
     override suspend fun prepareInferenceEngine() {
-        prepareEngine()
+        mapFailures { prepareEngine() }
     }
 
-    override suspend fun getBaseModelName(): String = baseModelName()
+    override suspend fun getBaseModelName(): String = mapFailures { baseModelName() }
 
-    override suspend fun runInference(inputText: String): String = inference(inputText)
+    override suspend fun runInference(inputText: String): String =
+        mapFailures { inference(inputText) }
 
     override fun close() {
         closeClient()
     }
+
+    private suspend fun <T> mapFailures(block: suspend () -> T): T =
+        try {
+            block()
+        } catch (e: Exception) {
+            if (e is CancellationException) throw e
+            if (e is CapabilityPreparationException) throw e
+            throw CapabilityPreparationException(MlKitCapabilityFailureMapper.map(e), e)
+        }
 }

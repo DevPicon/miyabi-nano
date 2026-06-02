@@ -8,6 +8,17 @@ data class CapabilityPreparationFailure(
 ) {
     enum class Category {
         SERVICE_DISCONNECTED,
+        AICORE_INCOMPATIBLE,
+        NEEDS_SYSTEM_UPDATE,
+        FEATURE_UNAVAILABLE,
+        DISK_PRESSURE,
+        BUSY,
+        CANCELLED,
+        BACKGROUND_USE_BLOCKED,
+        BATTERY_QUOTA_EXCEEDED,
+        INPUT_TOO_LARGE,
+        INPUT_TOO_SMALL,
+        POLICY_REJECTION,
         UNKNOWN
     }
 }
