@@ -154,11 +154,20 @@ fun InferenceScreen(
                         containerColor = MaterialTheme.colorScheme.errorContainer
                     )
                 ) {
-                    Text(
-                        text = uiState.error ?: "",
-                        modifier = Modifier.padding(16.dp),
-                        color = MaterialTheme.colorScheme.onErrorContainer
-                    )
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = uiState.error ?: "",
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                        if (uiState.errorTechnicalDetail != null) {
+                            Text(
+                                text = "Technical detail: ${uiState.errorTechnicalDetail}",
+                                modifier = Modifier.padding(top = 8.dp),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                        }
+                    }
                 }
             }
 

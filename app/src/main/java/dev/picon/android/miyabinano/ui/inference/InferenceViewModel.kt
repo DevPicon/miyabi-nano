@@ -131,6 +131,7 @@ class InferenceViewModel @Inject constructor(
                 outputText = "",
                 metrics = null,
                 error = null,
+                errorTechnicalDetail = null,
                 blockingReason = null,
                 recoveryGuidance = null
             )
@@ -141,7 +142,12 @@ class InferenceViewModel @Inject constructor(
         if (_uiState.value.preparationState !is CapabilityPreparationState.Available) return
         val inputText = _uiState.value.inputText.trim()
         if (inputText.isEmpty()) {
-            _uiState.update { it.copy(error = "Please enter some text") }
+            _uiState.update {
+                it.copy(
+                    error = "Please enter some text",
+                    errorTechnicalDetail = null
+                )
+            }
             return
         }
 
@@ -153,7 +159,8 @@ class InferenceViewModel @Inject constructor(
                         _uiState.update {
                             it.copy(
                                 isProcessing = false,
-                                error = null
+                                error = null,
+                                errorTechnicalDetail = null
                             )
                         }
                     }
@@ -162,6 +169,7 @@ class InferenceViewModel @Inject constructor(
                             it.copy(
                                 isProcessing = true,
                                 error = null,
+                                errorTechnicalDetail = null,
                                 blockingReason = null,
                                 recoveryGuidance = null,
                                 outputText = "",
@@ -175,7 +183,8 @@ class InferenceViewModel @Inject constructor(
                                 isProcessing = false,
                                 outputText = result.outputText,
                                 metrics = result.metrics,
-                                error = null
+                                error = null,
+                                errorTechnicalDetail = null
                             )
                         }
 
@@ -189,6 +198,7 @@ class InferenceViewModel @Inject constructor(
                                 blockingReason = result.message,
                                 recoveryGuidance = result.recoveryGuidance,
                                 error = null,
+                                errorTechnicalDetail = null,
                                 outputText = "",
                                 metrics = null
                             )
@@ -199,6 +209,7 @@ class InferenceViewModel @Inject constructor(
                             it.copy(
                                 isProcessing = false,
                                 error = "${result.failure.userMessage} ${result.failure.recoveryGuidance}",
+                                errorTechnicalDetail = result.failure.technicalDetail,
                                 blockingReason = null,
                                 recoveryGuidance = null
                             )

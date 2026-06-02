@@ -12,6 +12,7 @@ data class InferenceUiState(
     val outputText: String = "",
     val isProcessing: Boolean = false,
     val error: String? = null,
+    val errorTechnicalDetail: String? = null,
     val blockingReason: String? = null,
     val recoveryGuidance: String? = null,
     val metrics: InferenceMetrics? = null,
